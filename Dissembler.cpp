@@ -192,7 +192,12 @@ I_Instruction* Dissembler::parse_I_Type_Instruction(string binary_instruction, i
                 return new Addiu(binary_instruction, memory);
         }else if(isSLTI(binary_instruction)){
                 return new Slti(binary_instruction, memory);
-        }else{
+        }else if(isBLEZ(binary_instruction)){
+                return new Blez(binary_instruction, memory);
+        }else if(isBGTZ(binary_instruction)){
+                return new Bgtz(binary_instruction, memory);
+        }
+        else{
                 cout<<"Unsuported instruction."<<endl;
                 exit(0);
         }

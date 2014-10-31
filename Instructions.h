@@ -106,7 +106,6 @@ class J_Instruction : public Instruction{
                 stringstream ss;
         public:
                 J_Instruction(string instruction, int memory): Instruction(instruction, memory){
-                        
                         this->target = convert_binary_string_to_int(instruction.substr(6,26))<<2;
                 }
                 virtual string print(){
@@ -128,7 +127,7 @@ class Sll: public R_Instruction{
                 Sll(string instruction, int memory): R_Instruction(instruction, memory){
                 }
                 virtual string print(){
-                        ss<< Instruction::print() << " SLL R" << rd << ", R" << rd << ", #" << sd;
+                        ss<< Instruction::print() << " SLL R" << rd << ", R" << rt << ", #" << sd;
                         return ss.str();
                 }
 };
