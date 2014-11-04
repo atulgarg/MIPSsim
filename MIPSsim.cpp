@@ -1,19 +1,30 @@
-#include<iostream>
-#include<cstring>
-#include<cstdlib>
 #include "MIPSsim.h"
 using namespace std;
 MIPSsim::MIPSsim(char* input_file,char* output_file)
 {
         this->input_file = input_file;
         this->output_file = output_file;
-        this->dissembler = new Dissembler(input_file, output_file);
+        this->memory = new map<int,Abstract*>();
+        this->dissembler = new Dissembler();
 }
 void MIPSsim::dissemble(){
-        instruction_list = this->dissembler->read_file();
-        dissembler->writeOutput(instruction_list);
+        //initialise memory by dissembling the instructions and storing in memory.
+        this->dissembler->read_file(input_file, memory);
 }
-
+/**
+ * Utility function to print content of memory.
+ */
+void MIPSsim::print_memory(){
+        if(memory!=NULL){
+                //iterate through ordered map and print the content.
+                map<int, Abstract*>::iterator memory_iterator = memory->begin();
+                ofstream ofs(output_file,ofstream::out);
+                for(;memory_iterator!=memory->end();++memory_iterator){
+                        ofs<<memory_iterator->second->print()<<"\r\n";
+                }
+                ofs.close();
+        }
+}
 bool notValidArguments(int num_args, char* argv[]){
         if(strcmp(argv[3],"dis") != 0 && strcmp(argv[3],"sim") != 0)
                 return true;
@@ -32,5 +43,8 @@ int main(int argc, char* argv[]){
                 exit(0);
         }
         MIPSsim mipssim(argv[1],argv[2]);
+        //this will initialise memory.
         mipssim.dissemble();
+        //print content of memory.
+        mipssim.print_memory();
 }

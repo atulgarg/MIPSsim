@@ -2,11 +2,16 @@
 #define _DISSEMBLER_H_
 #include<string>
 #include<vector>
+#include<map>
+#include<fstream>
+#include<cstring>
+#include<cstdlib>
+#include<iostream>
 #include "Instructions.h"
+using namespace std;
 class Dissembler{
         private:
                 char* input_file;
-                char* output_file;
                 static const string J_TYPE_FORMAT;
                 static const string R_OR_BREAK;
                 static const string BREAK_I;
@@ -75,10 +80,10 @@ class Dissembler{
 
                 Instruction* parse_opcode(string binary_instruction, bool &is_data, int memory);
         public:
-                Dissembler(char* input_file, char* output_file);
+                Dissembler();
                 //Method to read binary input file
-                vector<Abstract*> read_file();
+                void read_file(char*input_file, map<int,Abstract*>* memory);
                 //Write output to File.
-                void writeOutput(vector<Abstract*> instruct_list);
+                //void writeOutput(vector<Abstract*> instruct_list);
 };
 #endif

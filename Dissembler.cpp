@@ -1,6 +1,3 @@
-#include <iostream>
-#include <fstream>
-#include <cstdlib>
 #include "Dissembler.h"
 const string Dissembler::J_TYPE_FORMAT =  "000010";
 const string Dissembler::R_OR_BREAK = "000000";
@@ -29,9 +26,7 @@ const string Dissembler::ADDI = "001000";
 const string Dissembler::ADDIU = "001001";
 const string Dissembler::SLTI = "001010";
 
-Dissembler::Dissembler(char* input_file, char* output_file){
-        this->input_file = input_file;
-        this->output_file = output_file;
+Dissembler::Dissembler(){
 }
 /**
  * Convert instruction read to binary string.
@@ -202,48 +197,46 @@ I_Instruction* Dissembler::parse_I_Type_Instruction(string binary_instruction, i
                 exit(0);
         }
 }
-Instruction* Dissembler::parse_opcode(string binary_instruction, bool &is_data, int memory){
+Instruction* Dissembler::parse_opcode(string binary_instruction, bool &is_data, int memory_address){
         string opcode = binary_instruction.substr(0,6);
         if(opcode.compare(J_TYPE_FORMAT)==0){
                 //check if supported type instruction and create one.
-                return new J_Instruction(binary_instruction, memory);;
+                return new J_Instruction(binary_instruction, memory_address);;
         }else if(opcode.compare(R_OR_BREAK) == 0){
                 //determine R or Break;
                 if(binary_instruction.compare(BREAK_I) == 0){
                         is_data = true;
-                        return new BREAK(binary_instruction, memory);
+                        return new BREAK(binary_instruction, memory_address);
                 }
                 else{
                         //check if supported R_Instruction if yes then create one and return.
-                        return parse_R_Type_Instruction(binary_instruction, memory);
+                        return parse_R_Type_Instruction(binary_instruction, memory_address);
                 }
         }else
-                return parse_I_Type_Instruction(binary_instruction, memory); 
+                return parse_I_Type_Instruction(binary_instruction, memory_address); 
 }
-vector<Abstract*> Dissembler::read_file(){
+void Dissembler::read_file(char* input_file, map<int,Abstract*>* memory){
         FILE* fp;
-        vector<Abstract*> instruct_list;
         char instruction_read[4];
         fp = fopen(input_file,"rb");
         bool is_data = false;
-        int memory = 600;
+        int memory_address = 600;
         while(fread(&instruction_read,1,4,fp)!=0)
         {
                 string binary_instruction  = in_binary(instruction_read);
                 if(!is_data){
-                        instruct_list.push_back(parse_opcode(binary_instruction,is_data,memory));
+                        memory->insert(make_pair(memory_address,parse_opcode(binary_instruction,is_data,memory_address)));
                 }else{
-                        instruct_list.push_back(new Abstract(binary_instruction, memory));
+                        memory->insert(make_pair(memory_address, (new Abstract(binary_instruction, memory_address))));
                 }
-                memory+=4;
+                memory_address+=4;
         }
-        return instruct_list;
 }
 /**
  * Write output to File.
- */
 void Dissembler::writeOutput(vector<Abstract*> instruct_list){
         ofstream ofs(output_file,ofstream::out);
         for(int i=0;i<instruct_list.size();i++)
                 ofs<<instruct_list.at(i)->print()<<"\r\n";
 }
+*/
