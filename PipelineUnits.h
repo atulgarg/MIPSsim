@@ -1,3 +1,4 @@
+#include "Instructions.h"
 class ReservationStation{
         //Opcode
         bool busy;
@@ -6,25 +7,24 @@ class ReservationStation{
         ReservationStation* Qj;
         ReservationStation* Qk;
         int A;
-        //        dest;
+        //        dest; ?? need to verify if this can be register or only address?
         bool isBusy();
 };
 class ReorderBuffer{
         //      entry
         //      status;
-        //      instruction;
+        Instructions* instruction;
         //      state;
         //      destination;
-        //      value;
-        //
+        double value;
 };
 class RegisterStat{
         //  status;
         //  reorder;
 };
 class BranchTargetBuffer{
-        //instruction address;
-        //branch target address;
+        int instructionAddress;
+        int branchTargetAddress;
         //1-bit predictor;
         //LRU replacement policy;
 };

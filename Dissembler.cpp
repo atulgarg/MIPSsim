@@ -197,6 +197,10 @@ I_Instruction* Dissembler::parse_I_Type_Instruction(string binary_instruction, i
                 exit(0);
         }
 }
+/**
+ * @method parse_opcode will parse the instruction in sub-type and also
+ * set is_data to true once break is seen. 
+ */
 Instruction* Dissembler::parse_opcode(string binary_instruction, bool &is_data, int memory_address){
         string opcode = binary_instruction.substr(0,6);
         if(opcode.compare(J_TYPE_FORMAT)==0){
@@ -215,6 +219,10 @@ Instruction* Dissembler::parse_opcode(string binary_instruction, bool &is_data, 
         }else
                 return parse_I_Type_Instruction(binary_instruction, memory_address); 
 }
+/*
+ * @method read_file will read the instructions from input file specified
+ * and initialise memory map passed. Memory is assumed to start from 600.
+ */
 void Dissembler::read_file(char* input_file, map<int,Abstract*>* memory){
         FILE* fp;
         char instruction_read[4];
@@ -232,11 +240,3 @@ void Dissembler::read_file(char* input_file, map<int,Abstract*>* memory){
                 memory_address+=4;
         }
 }
-/**
- * Write output to File.
-void Dissembler::writeOutput(vector<Abstract*> instruct_list){
-        ofstream ofs(output_file,ofstream::out);
-        for(int i=0;i<instruct_list.size();i++)
-                ofs<<instruct_list.at(i)->print()<<"\r\n";
-}
-*/
