@@ -1,9 +1,16 @@
 #include "Instructions.h"
+//Constants used for reorder Buffer
 #define ROB_COMMIT 0
 #define ROB_WRITE_RESULT 1
 #define ROB_EXECUTE 2
 enum ROBState {ROB_COMMIT, ROB_WRITE_RESULT, ROB_EXECUTE};
-class ReservationStation{
+
+//Constants used for BTB.
+#define PREDICTION_TAKEN 1
+#define PREDICTION_NOT_TAKEN 0
+enum Prediction {PREDICTION_TAKEN, PREDICTION_NOT_TAKEN};
+
+class RSEntry{
         //Opcode
         bool busy;
         int Vj;
@@ -25,10 +32,10 @@ class RegisterStat{
         //  status;
         //  reorder;
 };
-class BranchTargetBufferEntry{
+class BTBEntry{
         int instructionAddress;
         int branchTargetAddress;
-        //1-bit predictor;
+        Prediction prediction;
         //LRU replacement policy;
 };
 class RegisterFile{
