@@ -1,12 +1,15 @@
 #include "PipelineUnits.h"
+#include<queue>
+using namespace std;
 class Pipeline{
         private:
+                map<int, Abstract<Instruction*> > memory_map;
+                int PC; 
+                queue<Abstract*> instruction_queue;
                 //10 integer ALU RS entries
-                RSEntry reservationStation[10];
-                int reservationStationIndex;
+                ReservationStations reservationStations;
                 //6 Entries
                 ROBEntry ROB[6];
-                int ROBIndex;
         public:
                 void instructionFetch();
                 void decodeAndIssue();
