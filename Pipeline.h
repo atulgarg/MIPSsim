@@ -9,7 +9,7 @@ class Pipeline{
                 //10 integer ALU RS entries
                 ReservationStations reservationStations;
                 //6 Entries
-                ROBEntry ROB[6];
+                ROB rob;
         public:
                 void instructionFetch();
                 void decodeAndIssue();

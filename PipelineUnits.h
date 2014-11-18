@@ -41,12 +41,12 @@ class ROBEntry{
         double value;
 };
 class ROB{
-        ROBEntry** rob;
+        ROBEntry* rob;
         int front,rear;
         int max_entries;
         public:
         ROB(int max_entries);
-        void addROBEntry();
+        void addROBEntry(ROBEntry rob);
         bool isFull();
 }
 class RegisterStatEntry{

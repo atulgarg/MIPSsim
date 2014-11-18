@@ -14,12 +14,13 @@ void RSEntry::setBusy(bool busy){
         this->busy = busy;
 }
 ReservationStations::ReservationStations(int max_stations){
+        reservationStations = new RSEntry[max_stations];
         this->currently_used = 0;
         this->max_stations = max_stations;
 }
 int ReservationStations::findNextEmpty(){
-        for(int i=0;i<10;i++){
-                if(reservationStations[i] == NULL)
+        for(int i=0;i<max_stations;i++){
+                if(!reservationStations[i].isbusy())
                         return i;
         }
 }
@@ -33,7 +34,7 @@ RSEntry* ReservationStations::getReservationStation(){
         }
 }
 ROB::ROB(int max_entries){
-        rob = new *ROBEntry[max_entries]();
+        rob = new ROBEntry[max_entries]();
         this->max_entries = max_entries;
         this->front = -1;
         this->rear = -1;
