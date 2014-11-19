@@ -9,6 +9,7 @@ enum ROBState {ROB_COMMIT, ROB_WRITE_RESULT, ROB_EXECUTE};
 #define PREDICTION_TAKEN 1
 #define PREDICTION_NOT_TAKEN 0
 enum Prediction {PREDICTION_TAKEN, PREDICTION_NOT_TAKEN};
+
 class RSEntry{
         //Opcode
         bool busy;

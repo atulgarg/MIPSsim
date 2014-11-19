@@ -10,6 +10,11 @@ class Pipeline{
                 ReservationStations reservationStations;
                 //6 Entries
                 ROB rob;
+                int ALU_Units;
+                //waiting instructions for execution.
+                map<int, vector<Instruction*> > waiting_instructions;
+                //instructions currently executing.
+                vector<Instruction *> currentlyExecutingInstructions; 
         public:
                 void instructionFetch();
                 void decodeAndIssue();

@@ -1,5 +1,7 @@
 #include "Pipeline.h"
 Pipeline::Pipeline(){
+        //As mentioned in instructions.
+        ALU_Units = 10;
         PC = 600;
 }
 void Pipeline::instructionFetch(){
@@ -31,13 +33,14 @@ void Pipeline::execute(){
         //monitor CDB for operands not yet available.
         //checks RAW hazards.
         //execute instruction
-        //
+        if(ALU_Units > 0){
+
+        }
 }
 void Pipeline::writeResult(){
-//write result to ROB and waiting RS through CDB
-//Store, Jump Branch NOP and break skip this stage.
-//change robStatus ready to commit.
-
+        //write result to ROB and waiting RS through CDB
+        //Store, Jump Branch NOP and break skip this stage.
+        //change robStatus ready to commit.
 }
 void Pipeline::commit(){
         //Regular ALU instruction
