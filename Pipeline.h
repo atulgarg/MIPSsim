@@ -22,15 +22,17 @@ class Pipeline{
                 priority_queue<pair<int,Abstract*>,vector<pair<int,Abstract*> >, InstructionQueueComparison> instruction_queue;
                 ReservationStations reservationStations;
                 ROB rob;
+                RegisterStat registerStat;
+                RegisterFile registerFile;
                 /*
                 int ALU_Units;
                 //waiting instructions for execution.
-                map<int, vector<Instruction*> > waitingInstructions;
+                vector<RSEntry*>  waitingStations;
                 //instructions currently executing.
-                vector<Instruction *> currentlyExecutingInstructions;
+                vector<RSEntry *> executingStations;
                */ 
         public:
-                Pipeline(int numReservationStations, int numROBEntry);
+                Pipeline(int numReservationStations, int numROBEntry, int numberOfRegister);
                 void instructionFetch(int cycle);
                 void decodeAndIssue(int cycle);
                 void execute(int cycle);

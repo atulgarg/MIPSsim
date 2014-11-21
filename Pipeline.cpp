@@ -1,5 +1,7 @@
 #include "Pipeline.h"
-Pipeline::Pipeline(int numReservationStations, int numROBEntry): reservationStations(numReservationStations),rob(numROBEntry){
+Pipeline::Pipeline(int numReservationStations, int numROBEntry, int numberOfRegister)
+        : reservationStations(numReservationStations), rob(numROBEntry), 
+          registerStat(numberOfRegister), registerFile(numberOfRegister){
         //As mentioned in instructions.
         PC = 600;
 }
@@ -19,7 +21,7 @@ void Pipeline::decodeAndIssue(int cycle){
         //check if there is empty reservation station and rob entry 
         if(!instruction_queue.empty() 
                         && !reservationStations.isFull()
-                        //                 && !rob.isFull()
+                        && !rob.isFull()
                         && instruction_queue.top().first < cycle) {
                 Abstract* next_instruction = instruction_queue.top().second;
                 instruction_queue.pop();
@@ -36,7 +38,6 @@ void Pipeline::decodeAndIssue(int cycle){
 
                 }
                 //rs reservation station fetch from station
-                //RSEntry* reservationStation = RSEntry(true,int Vj,int Vk,int ROBId_Qj,int ROBId_Qk,int A, cycle);
                 //robID fetch from ROB
         }else{
                 cout<<"Instruction Queue empty."<<endl;
