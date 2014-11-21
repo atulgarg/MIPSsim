@@ -235,7 +235,7 @@ void Dissembler::read_file(char* input_file, map<int,Abstract*>* memory){
                 if(!is_data){
                         memory->insert(make_pair(memory_address,parse_opcode(binary_instruction,is_data,memory_address)));
                 }else{
-                        memory->insert(make_pair(memory_address, (new Abstract(binary_instruction, memory_address))));
+                        memory->insert(make_pair(memory_address, (new Abstract(binary_instruction, memory_address, DataType))));
                 }
                 memory_address+=4;
         }

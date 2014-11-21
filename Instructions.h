@@ -6,15 +6,17 @@
 #include<sstream>
 #include<climits>
 using namespace std;
-enum Instruction_Type {I, R , J};
+enum Instruction_Type {IType, RType , JType, DataType, BreakType};
 
 class Abstract{
         string binary_instruction;
         int memory;
+        Instruction_Type instructionType;
         public:
-        Abstract(string binary_instruction, int memory){
+        Abstract(string binary_instruction, int memory,Instruction_Type instructionType){
                 this->binary_instruction = binary_instruction;
                 this->memory = memory;
+                this->instructionType = instructionType;
         }
         virtual string print(){
                 stringstream ss;
@@ -52,11 +54,15 @@ class Abstract{
                 }else
                         return convert_binary_string_to_int(string_val);
         }
+        Instruction_Type getType(){
+                return instructionType;
+        }
 };
 class Instruction: public Abstract{
         public:
-        Instruction(string instruction, int memory): Abstract(instruction, memory){
-        }
+        Instruction(string instruction, int memory, Instruction_Type instructionType)
+                : Abstract(instruction, memory, instructionType){
+                }
         virtual string print(){
                 stringstream ss;
                 ss<<getInstruction().substr(0,6)<<" "
@@ -77,7 +83,7 @@ class R_Instruction : public Instruction{
                 short int sd; 
                 short int function;
                 stringstream ss;
-                R_Instruction(string instruction, int memory): Instruction(instruction, memory){
+                R_Instruction(string instruction, int memory): Instruction(instruction, memory, RType){
                         this->rs = convert_binary_string_to_int(instruction.substr(6,5));
                         this->rt = convert_binary_string_to_int(instruction.substr(11,5));
                         this->rd = convert_binary_string_to_int(instruction.substr(16,5));
@@ -91,7 +97,7 @@ class I_Instruction : public Instruction{
                 int rt;
                 int immediate;
                 stringstream ss;
-                I_Instruction(string instruction, int memory): Instruction(instruction, memory){
+                I_Instruction(string instruction, int memory): Instruction(instruction, memory, IType){
                         this->rs = convert_binary_string_to_int(instruction.substr(6,5));
                         this->rt = convert_binary_string_to_int(instruction.substr(11,5));
                         this->immediate = convert_2_s_complement_to_int_16_32(instruction.substr(16,16));
@@ -105,7 +111,7 @@ class J_Instruction : public Instruction{
                 int target;
                 stringstream ss;
         public:
-                J_Instruction(string instruction, int memory): Instruction(instruction, memory){
+                J_Instruction(string instruction, int memory): Instruction(instruction, memory, JType){
                         this->target = convert_binary_string_to_int(instruction.substr(6,26))<<2;
                 }
                 virtual string print(){
@@ -115,7 +121,7 @@ class J_Instruction : public Instruction{
 };
 class BREAK: public Instruction{
         public:
-                BREAK(string instruction, int memory): Instruction(instruction, memory){
+                BREAK(string instruction, int memory): Instruction(instruction, memory, BreakType){
                 }   
                 virtual string print(){
                 return  Instruction::print() + " BREAK";

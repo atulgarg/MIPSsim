@@ -1,24 +1,40 @@
+#ifndef _PIPELINE_H_
+#define _PIPELINE_H_
 #include "PipelineUnits.h"
+#include "Instructions.h"
 #include<queue>
+#include<vector>
+#include<map>
 using namespace std;
+/**
+ * InstructionQueueComparison for returning instruction with smallest cycle.
+ */
+class InstructionQueueComparison{
+        public:
+                bool operator()(const pair<int, Abstract*>& lhs, const pair<int, Abstract*>& rhs)const{
+                        return (lhs.first > rhs.first);
+                }
+};
 class Pipeline{
         private:
-                map<int, Abstract<Instruction*> > memory_map;
+                map<int, Abstract*> memory_map;
                 int PC; 
-                queue<Abstract*> instruction_queue;
-                //10 integer ALU RS entries
+                priority_queue<pair<int,Abstract*>,vector<pair<int,Abstract*> >, InstructionQueueComparison> instruction_queue;
                 ReservationStations reservationStations;
-                //6 Entries
                 ROB rob;
+                /*
                 int ALU_Units;
                 //waiting instructions for execution.
-                map<int, vector<Instruction*> > waiting_instructions;
+                map<int, vector<Instruction*> > waitingInstructions;
                 //instructions currently executing.
-                vector<Instruction *> currentlyExecutingInstructions; 
+                vector<Instruction *> currentlyExecutingInstructions;
+               */ 
         public:
-                void instructionFetch();
-                void decodeAndIssue();
-                void execute();
-                void writeResult();
-                void commit();
+                Pipeline(int numReservationStations, int numROBEntry);
+                void instructionFetch(int cycle);
+                void decodeAndIssue(int cycle);
+                void execute(int cycle);
+                void writeResult(int cycle);
+                void commit(int cycle);
 };
+#endif

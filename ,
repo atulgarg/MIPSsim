@@ -66,17 +66,15 @@ class RegisterStatEntry{
         bool busy;
         int reorderEntryID;                 //id for reorder entry
         public:
-        RegisterStatEntry();
-        void update(bool busy, int reorderEntryID);
+        RegisterStatEntry(bool busy, int reorderEntryID);
         bool isBusy();
 };
 class RegisterStat{
         RegisterStatEntry* registerStat;
-        int numberOfRegisters;
+        int numberOfRegister;
         public:
         RegisterStat(int numberOfRegisters);
-        void updateRegister(int registerID, bool busy, int reorderID);
-        bool registerBusy(int registerID);
+        void updateRegister(int register, bool busy, int reorderID);
 };
 class BTBEntry{
         int instructionAddress;
@@ -86,10 +84,7 @@ class BTBEntry{
 };
 class RegisterFile{
         int* registerValue;
-        int numberOfRegisters; 
         public:
         RegisterFile(int numberOfRegisters);
-        void setRegisterValue(int registerID, int value);
-        int getRegisterValue(int registerID);
 };
 #endif

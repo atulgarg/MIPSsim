@@ -1,11 +1,12 @@
 #include "PipelineUnits.h"
-RSEntry::RSEntry(bool busy,int Vj,int Vk,RSEntry* Qj,RSEntry* Qk,int A){
+RSEntry::RSEntry(bool busy, int Vj, int Vk, int ROBId_Qj, int ROBId_Qk, int A, int cycle){
         this->busy = busy;
         this->Vj = Vj;
         this->Vk = Vk;
-        this->Qj = Qj;
-        this->Qk = Qk;
+        this->ROBId_Qj = ROBId_Qj;
+        this->ROBId_Qk = ROBId_Qk;
         this->A  = A;
+        this->cycle = cycle;
 }
 bool RSEntry::isBusy(){
         return busy;
@@ -13,36 +14,50 @@ bool RSEntry::isBusy(){
 void RSEntry::setBusy(bool busy){
         this->busy = busy;
 }
+
+int RSEntry::getCycle(){
+        return this->cycle;
+}
+
 ReservationStations::ReservationStations(int max_stations){
-        reservationStations = new RSEntry[max_stations];
+        reservationStations.resize(max_stations);
         this->currently_used = 0;
         this->max_stations = max_stations;
 }
-int ReservationStations::findNextEmpty(){
-        for(int i=0;i<max_stations;i++){
-                if(!reservationStations[i].isbusy())
-                        return i;
-        }
+
+bool ReservationStations::isFull(){
+        return (currently_used < max_stations);
 }
-/**
- * Get a reservationStation if there is one empty.
- */
-RSEntry* ReservationStations::getReservationStation(){
-        if(currently_used < max_stations){
-                this->currently_used++;
-                return reservationStations[findNextEmpty()]; 
-        }
+
+bool ReservationStations::addStation(RSEntry* reservationStation){
+        if(this->isFull())
+                return false;
+        reservationStations.push_back(reservationStation);
+        return true;
 }
+ROBEntry::ROBEntry(bool busy, Instruction* instruction, ROBState state, int destination){
+        this->busy = busy;
+        this->instruction = instruction;
+        this->state = state;
+        this->destination = destination;
+        this->value = -1;
+        this->cycle = -1;
+}
+void ROBEntry::update(double value, int cycle){
+        this->value = value;
+        this->cycle = cycle;
+}
+
 ROB::ROB(int max_entries){
-        rob = new ROBEntry[max_entries]();
+        rob = new ROBEntry*[max_entries];
         this->max_entries = max_entries;
         this->front = -1;
         this->rear = -1;
 }
 bool ROB::isFull(){
-        return ((this->front==0 && rear = max_entries-1) || front == rear+1);
+        return ((this->front==0 && rear == max_entries-1) || front == rear+1);
 }
-void ROB::addROBEntry(ROBEntry* robEntry){
+int ROB::push(ROBEntry* robEntry){
         if(!isFull()){
                 if(front == rear == -1){
                         //empty ROB
@@ -52,30 +67,60 @@ void ROB::addROBEntry(ROBEntry* robEntry){
                         rear =0;
                 else
                         rear++;
-                ROB[rear] = robEntry;
-        }else
-                cout<<"ROB full. Cannot add"<<endl;
+                rob[rear] = robEntry;
+        }else{
+                cout<<"ROB full. Cannot add something is wrong should not reach here."<<endl;
+                exit(0);
+        }
+        return rear;
 }
-//Register Status Entry for register file.
+ROBEntry* ROB::pop(){
+        if(!isEmpty()){
+                ROBEntry* top = rob[front];
+                front++;
+                return top;
+        }
+        return NULL;
+}
+bool ROB::isEmpty(){
+        //TODO need to check empty condition.
+        if(front == rear == -1)
+                return true;
+        return false;
+}
+void ROB::flushAfter(int robID){
+       //Set Null all the ID's after the given ID. 
+}
 RegisterStatEntry::RegisterStatEntry(){
         this->busy = false;
         this->reorderEntryID = -1;
 }
-bool RegisterStatEntry::isBusy(){
-        return isBusy;
-}
+//Register Status Entry for register file.
 void RegisterStatEntry::update(bool busy, int reorderEntryID){
         this->busy = busy;
         this->reorderEntryID = reorderEntryID;
 }
+bool RegisterStatEntry::isBusy(){
+        return busy;
+}
+RegisterStat::RegisterStat(int numberOfRegisters){
+        this->numberOfRegisters = numberOfRegisters;
+        registerStat = new RegisterStatEntry[numberOfRegisters];
+}
+void RegisterStat::updateRegister(int registerID, bool status, int reorderEntryID){
+        registerStat[registerID].update(status,reorderEntryID);
+}
+bool RegisterStat::registerBusy(int registerID){
+        return registerStat[registerID].isBusy();
+}
 //Register File Operations.
-RegisterFile::RegisterFile(int num_registers){
-        this->num_registers = num_registers;
-        registers = new RegisterStatEntry[num_registers];
+RegisterFile::RegisterFile(int numberOfRegisters){
+        this->numberOfRegisters = numberOfRegisters;
+        this->registerValue = new int[numberOfRegisters];
 }
-bool RegisterFile::isRegisterBusy(int reg){
-        return registers[reg]->isBusy();
+int RegisterFile::getRegisterValue(int registerID){
+        return this->registerValue[registerID];
 }
-void RegisterFile::updateRegister(int reg,bool busy, int reorderEntryID){
-        registers[reg]->update;
+void RegisterFile::setRegisterValue(int registerID, int value){
+        this->registerValue[registerID] = value;
 }
