@@ -6,11 +6,11 @@ Pipeline::Pipeline(int numReservationStations, int numROBEntry, int numberOfRegi
         PC = 600;
 }
 void Pipeline::instructionFetch(int cycle){
-        Abstract* next_instruction = memory_map[PC];
-        if(next_instruction!=NULL){
+        Abstract* nextInstruction = memory_map[PC];
+        if(nextInstruction!=NULL){
                 //TODO increament PC
                 this->PC = this->PC + 4;
-                instruction_queue.push(make_pair(cycle,next_instruction));
+                instruction_queue.push(make_pair(cycle,(Instruction*)nextInstruction));
                 //TODO BTB implementation.
         }else{
                 cout<<"No more instructions in memory"<<endl;
@@ -23,22 +23,16 @@ void Pipeline::decodeAndIssue(int cycle){
                         && !reservationStations.isFull()
                         && !rob.isFull()
                         && instruction_queue.top().first < cycle) {
-                Abstract* next_instruction = instruction_queue.top().second;
+                Instruction* nextInstruction = instruction_queue.top().second;
                 instruction_queue.pop();
-                //TODO Decode Instruction
-                if(next_instruction->getType() == BreakType ){
-
-                }else if(next_instruction->getType() == RType){
-
-                }else if(next_instruction->getType() == IType){
-
-                }else if(next_instruction->getType() == JType){
-
-                }else if(next_instruction->getType() == DataType){
-
-                }
                 //rs reservation station fetch from station
-                //robID fetch from ROB
+                RSEntry* reservationStationEntry 
+                        = nextInstruction->decodeInstruction(registerStat, registerFile, rob, cycle);
+                reservationStations.addStation(reservationStationEntry);
+                ROBEntry* robEntry 
+                        = new ROBEntry(true, nextInstruction, ROB_EXECUTE, nextInstruction->getDestination());
+                int robID = rob.push(robEntry);
+                reservationStationEntry->updateReorderID(robID);
         }else{
                 cout<<"Instruction Queue empty."<<endl;
         }

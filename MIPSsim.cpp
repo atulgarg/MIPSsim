@@ -6,10 +6,17 @@ MIPSsim::MIPSsim(char* input_file,char* output_file)
         this->output_file = output_file;
         this->memory = new map<int,Abstract*>();
         this->dissembler = new Dissembler();
+        this->simulator = new Simulator(memory, 600,10,6,32);
 }
 void MIPSsim::dissemble(){
         //initialise memory by dissembling the instructions and storing in memory.
         this->dissembler->read_file(input_file, memory);
+}
+void MIPSsim::simulate(int m, int n){
+        if(m == n && m == 0)
+                simulator->simulate();
+        else
+                simulator->simulate(m,n);
 }
 /**
  * Utility function to print content of memory.
@@ -43,8 +50,13 @@ int main(int argc, char* argv[]){
                 exit(0);
         }
         MIPSsim mipssim(argv[1],argv[2]);
-        //this will initialise memory.
-        mipssim.dissemble();
-        //print content of memory.
-        mipssim.print_memory();
+        if(argv[3] == "dis"){
+                //this will initialise memory.
+                mipssim.dissemble();
+                //print content of memory.
+                mipssim.print_memory();
+        }else if(argv[3] == "sim"){
+                //TODO m,n parse
+                mipssim.simulate(0,0);
+        }
 }

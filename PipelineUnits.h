@@ -1,6 +1,5 @@
 #ifndef _PIPELINE_UNITS_H_
 #define _PIPELINE_UNITS_H_
-#include "Instructions.h"
 #include<vector>
 #include<queue>
 #include<cstdlib>
@@ -10,44 +9,47 @@ enum ROBState { ROB_COMMIT, ROB_WRITE_RESULT, ROB_EXECUTE };
 
 //Constants used for BTB.
 enum Prediction {PREDICTION_TAKEN, PREDICTION_NOT_TAKEN};
-
+class Instruction;
 class RSEntry{
-        //Opcode
+        Instruction* instruction;
         bool busy;
         int Vj;
         int Vk;
         int ROBId_Qj;
         int ROBId_Qk;
         int A;
-        int reorderEntryID; //destination.
+        int reorderEntryID; 
+        int destination;
         int cycle;
         public:
-        RSEntry(bool busy,int Vj,int Vk,int ROBId_Qj,int ROBId_Qk,int A,int cycle);
+        RSEntry(Instruction* instruction,bool busy,int Vj,int Vk,int ROBId_Qj,int ROBId_Qk,int A,int cycle);
         bool isBusy();
         void setBusy(bool busy);
         void updateReorderID(int reorderEntryID);
         int getCycle();
 };
 class ReservationStations{
-        vector<RSEntry*> reservationStations;
+        std::vector<RSEntry*> reservationStations;
         int currently_used;
         int max_stations;
         public:
         ReservationStations(int max_stations);
         bool isFull();
         bool addStation(RSEntry* reservationStation);
+        void print();
 };
 class ROBEntry{
         bool busy;
         Instruction* instruction;
         ROBState state;
         int destination;    //differentiate between memory and register??
-        double value;
+        int value;
         int cycle;          //for specifying cycle in which the result was put.
-        public:
         public:
         ROBEntry(bool busy, Instruction* instruction, ROBState state, int destination);
         void update(double value, int cycle);
+        int getValue();
+        ROBState getState();
 };
 class ROB{
         //how to retrieve value.
@@ -62,6 +64,8 @@ class ROB{
         bool isEmpty();
         bool isFull();
         void flushAfter(int robID);
+        int value(int robID);
+        ROBState state(int robID);
 };
 class RegisterStatEntry{
         bool busy;
@@ -69,6 +73,7 @@ class RegisterStatEntry{
         public:
         RegisterStatEntry();
         void update(bool busy, int reorderEntryID);
+        int getReorderEntryID();
         bool isBusy();
 };
 class RegisterStat{
@@ -78,6 +83,7 @@ class RegisterStat{
         RegisterStat(int numberOfRegisters);
         void updateRegister(int registerID, bool busy, int reorderID);
         bool registerBusy(int registerID);
+        int getRegisterReorderEntryID(int registerID);
 };
 class BTBEntry{
         int instructionAddress;

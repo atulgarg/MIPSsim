@@ -1,5 +1,7 @@
 #include "PipelineUnits.h"
-RSEntry::RSEntry(bool busy, int Vj, int Vk, int ROBId_Qj, int ROBId_Qk, int A, int cycle){
+using namespace std;
+RSEntry::RSEntry(Instruction* instruction, bool busy, int Vj, int Vk, int ROBId_Qj, int ROBId_Qk, int A, int cycle){
+        this->instruction = instruction;
         this->busy = busy;
         this->Vj = Vj;
         this->Vk = Vk;
@@ -14,7 +16,9 @@ bool RSEntry::isBusy(){
 void RSEntry::setBusy(bool busy){
         this->busy = busy;
 }
-
+void RSEntry::updateReorderID(int robID){
+        this->A = robID;
+}
 int RSEntry::getCycle(){
         return this->cycle;
 }
@@ -47,7 +51,12 @@ void ROBEntry::update(double value, int cycle){
         this->value = value;
         this->cycle = cycle;
 }
-
+int ROBEntry::getValue(){
+        return this->value;
+}
+ROBState ROBEntry::getState(){
+        return this->state;
+}
 ROB::ROB(int max_entries){
         rob = new ROBEntry*[max_entries];
         this->max_entries = max_entries;
@@ -69,7 +78,8 @@ int ROB::push(ROBEntry* robEntry){
                         rear++;
                 rob[rear] = robEntry;
         }else{
-                cout<<"ROB full. Cannot add something is wrong should not reach here."<<endl;
+                //TODO check
+                //cout<<"ROB full. Cannot add something is wrong should not reach here."<<endl;
                 exit(0);
         }
         return rear;
@@ -91,6 +101,12 @@ bool ROB::isEmpty(){
 void ROB::flushAfter(int robID){
        //Set Null all the ID's after the given ID. 
 }
+int ROB::value(int robID){
+        return rob[robID]->getValue();
+}
+ROBState ROB::state(int robID){
+        return rob[robID]->getState();
+}
 RegisterStatEntry::RegisterStatEntry(){
         this->busy = false;
         this->reorderEntryID = -1;
@@ -101,7 +117,10 @@ void RegisterStatEntry::update(bool busy, int reorderEntryID){
         this->reorderEntryID = reorderEntryID;
 }
 bool RegisterStatEntry::isBusy(){
-        return busy;
+        return this->busy;
+}
+int RegisterStatEntry::getReorderEntryID(){
+        return this->reorderEntryID;
 }
 RegisterStat::RegisterStat(int numberOfRegisters){
         this->numberOfRegisters = numberOfRegisters;
@@ -117,6 +136,8 @@ bool RegisterStat::registerBusy(int registerID){
 RegisterFile::RegisterFile(int numberOfRegisters){
         this->numberOfRegisters = numberOfRegisters;
         this->registerValue = new int[numberOfRegisters];
+        for(int i=0;i<numberOfRegisters;i++)
+                this->registerValue[i] = 0;
 }
 int RegisterFile::getRegisterValue(int registerID){
         return this->registerValue[registerID];

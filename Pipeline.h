@@ -11,26 +11,29 @@ using namespace std;
  */
 class InstructionQueueComparison{
         public:
-                bool operator()(const pair<int, Abstract*>& lhs, const pair<int, Abstract*>& rhs)const{
+                bool operator()(const pair<int, Instruction*>& lhs, const pair<int, Instruction*>& rhs)const{
                         return (lhs.first > rhs.first);
                 }
 };
 class Pipeline{
         private:
                 map<int, Abstract*> memory_map;
-                int PC; 
-                priority_queue<pair<int,Abstract*>,vector<pair<int,Abstract*> >, InstructionQueueComparison> instruction_queue;
+                int PC;
+                int NPC; 
+                priority_queue<pair<int,Instruction*>,
+                        vector<pair<int,Instruction*> >, 
+                        InstructionQueueComparison> instruction_queue;
                 ReservationStations reservationStations;
                 ROB rob;
                 RegisterStat registerStat;
                 RegisterFile registerFile;
                 /*
-                int ALU_Units;
+                   int ALU_Units;
                 //waiting instructions for execution.
                 vector<RSEntry*>  waitingStations;
                 //instructions currently executing.
                 vector<RSEntry *> executingStations;
-               */ 
+                */ 
         public:
                 Pipeline(int numReservationStations, int numROBEntry, int numberOfRegister);
                 void instructionFetch(int cycle);

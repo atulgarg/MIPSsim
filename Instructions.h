@@ -5,9 +5,9 @@
 #include<iostream>
 #include<sstream>
 #include<climits>
+#include "PipelineUnits.h"
 using namespace std;
 enum Instruction_Type {IType, RType , JType, DataType, BreakType};
-
 class Abstract{
         string binary_instruction;
         int memory;
@@ -60,20 +60,41 @@ class Abstract{
 };
 class Instruction: public Abstract{
         public:
-        Instruction(string instruction, int memory, Instruction_Type instructionType)
-                : Abstract(instruction, memory, instructionType){
+                Instruction(string instruction, int memory, Instruction_Type instructionType)
+                        : Abstract(instruction, memory, instructionType){
+                        }
+                virtual string print(){
+                        stringstream ss;
+                        ss<<getInstruction().substr(0,6)<<" "
+                                << getInstruction().substr(6,5) << " "
+                                << getInstruction().substr(11,5) << " "
+                                << getInstruction().substr(16,5) << " "
+                                << getInstruction().substr(21,5) << " "
+                                << getInstruction().substr(26,6) << " "
+                                << getMemory();
+                        return ss.str();
                 }
-        virtual string print(){
-                stringstream ss;
-                ss<<getInstruction().substr(0,6)<<" "
-                        << getInstruction().substr(6,5) << " "
-                        << getInstruction().substr(11,5) << " "
-                        << getInstruction().substr(16,5) << " "
-                        << getInstruction().substr(21,5) << " "
-                        << getInstruction().substr(26,6) << " "
-                        << getMemory();
-                return ss.str();
-        }
+                void decodeUtility(int reg, int& Vj,int& Qj, RegisterStat registerStat, RegisterFile registerFile, ROB rob){
+                        if(registerStat.registerBusy(reg)){
+                                int h = registerStat.getRegisterReorderEntryID(reg);
+                                if(rob.state(h) == ROB_WRITE_RESULT){
+                                        Vj = rob.value(h);
+                                        Qj = -1;
+                                }else{
+                                        Qj = h;
+                                }
+                        }else{
+                                Vj = registerFile.getRegisterValue(reg);
+                                Qj = -1;
+                        }
+                }
+
+                RSEntry* decodeInstruction(RegisterStat registerStat, RegisterFile registerFile,ROB rob, int cycle){
+                        //TODO virtul
+                }
+                int getDestination(){
+                        //TODO virtual
+                }
 };
 class R_Instruction : public Instruction{
         public:
@@ -90,6 +111,17 @@ class R_Instruction : public Instruction{
                         this->sd = convert_binary_string_to_int(instruction.substr(21,5));
                         this->function = convert_binary_string_to_int(instruction.substr(26,6));
                 }
+                RSEntry* decodeInstruction(RegisterStat registerStat, RegisterFile registerFile,ROB rob, int cycle){
+                        int Qj,Qk,Vj,Vk;
+                        decodeUtility(rs,Vj,Qj,registerStat, registerFile,rob);
+                        decodeUtility(rt,Vk,Qk,registerStat, registerFile, rob);
+                        int A;          //TODO fix!!
+                        RSEntry* reservationStation = new RSEntry(this,true,Vj,Vj,Qj,Qk,A,cycle);
+                        return reservationStation; 
+                }
+                int getDestination(){
+                        return rd;
+                }
 };
 class I_Instruction : public Instruction{
         public:
@@ -105,6 +137,16 @@ class I_Instruction : public Instruction{
                 virtual int getImmediate(){
                         return immediate;
                 }
+                RSEntry* decodeInstruction(RegisterStat registerStat, RegisterFile registerFile,ROB rob, int cycle){
+                        int Qj,Qk,Vj,Vk;
+                        decodeUtility(rt,Vk,Qk,registerStat, registerFile, rob);
+                        int A;          //TODO fix!!
+                        RSEntry* reservationStation = new RSEntry(this,true,Vj,Vj,Qj,Qk,A,cycle);
+                        return reservationStation; 
+                }
+                int getDestination(){
+                        return rt;
+                }
 };
 class J_Instruction : public Instruction{
         private:
@@ -118,6 +160,10 @@ class J_Instruction : public Instruction{
                         ss<<Instruction::print()<<" J #"<<target;
                         return ss.str();
                 }
+                RSEntry* decodeInstruction(RegisterStat registerStat, RegisterFile registerFile,ROB rob, int cycle){
+                        //TODO
+                }
+
 };
 class BREAK: public Instruction{
         public:
@@ -125,7 +171,11 @@ class BREAK: public Instruction{
                 }   
                 virtual string print(){
                 return  Instruction::print() + " BREAK";
-                }   
+                }
+                RSEntry* decodeInstruction(RegisterStat registerStat, RegisterFile registerFile,ROB rob, int cycle){
+                        //TODO
+                }
+
 };
 //R Type instructions
 class Sll: public R_Instruction{
