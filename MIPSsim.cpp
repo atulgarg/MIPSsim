@@ -6,17 +6,17 @@ MIPSsim::MIPSsim(char* input_file,char* output_file)
         this->output_file = output_file;
         this->memory = new map<int,Abstract*>();
         this->dissembler = new Dissembler();
-        this->simulator = new Simulator(memory, 600,10,6,32);
+        this->simulator = new Simulator(memory, 600,10,6,32,16);
 }
 void MIPSsim::dissemble(){
         //initialise memory by dissembling the instructions and storing in memory.
         this->dissembler->read_file(input_file, memory);
 }
-void MIPSsim::simulate(int m, int n){
+vector<string> MIPSsim::simulate(int m, int n){
         if(m == n && m == 0)
-                simulator->simulate();
+                return simulator->simulate();
         else
-                simulator->simulate(m,n);
+                return simulator->simulate(m,n);
 }
 /**
  * Utility function to print content of memory.
@@ -31,6 +31,13 @@ void MIPSsim::print_memory(){
                 }
                 ofs.close();
         }
+}
+void MIPSsim::print_cycle(vector<string> cycleOutput){
+        ofstream ofs(output_file,ofstream::out);
+        for(int i=0;i<cycleOutput.size();i++){
+                ofs<<cycleOutput.at(i)<<"\r\n";
+        }
+        ofs.close();
 }
 bool notValidArguments(int num_args, char* argv[]){
         if(strcmp(argv[3],"dis") != 0 && strcmp(argv[3],"sim") != 0)
@@ -50,13 +57,12 @@ int main(int argc, char* argv[]){
                 exit(0);
         }
         MIPSsim mipssim(argv[1],argv[2]);
-        if(argv[3] == "dis"){
-                //this will initialise memory.
-                mipssim.dissemble();
-                //print content of memory.
+        //this will initialise memory.
+        mipssim.dissemble();
+        if(strcmp(argv[3],"dis") == 0){
                 mipssim.print_memory();
-        }else if(argv[3] == "sim"){
+        }else if(strcmp(argv[3],"sim") ==0 ){
                 //TODO m,n parse
-                mipssim.simulate(0,0);
+                mipssim.print_cycle(mipssim.simulate(0,0));
         }
 }

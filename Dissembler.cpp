@@ -93,9 +93,7 @@ bool Dissembler:: isSLT(string binary_instruction){
         return (binary_instruction.substr(21,11).compare(SLT) == 0);
 }
 R_Instruction* Dissembler::parse_R_Type_Instruction(string binary_instruction, int memory){
-        if(isNOP(binary_instruction)){
-                return new Nop(binary_instruction, memory);
-        }else if(isSRL(binary_instruction)){
+        if(isSRL(binary_instruction)){
                 return new Srl(binary_instruction, memory);
         }else if(isSRA(binary_instruction)){
                 return new Sra(binary_instruction, memory);
@@ -214,7 +212,10 @@ Instruction* Dissembler::parse_opcode(string binary_instruction, bool &is_data, 
                 }
                 else{
                         //check if supported R_Instruction if yes then create one and return.
-                        return parse_R_Type_Instruction(binary_instruction, memory_address);
+                        if(isNOP(binary_instruction)){
+                                return new Nop(binary_instruction, memory_address);
+                        }else
+                                return parse_R_Type_Instruction(binary_instruction, memory_address);
                 }
         }else
                 return parse_I_Type_Instruction(binary_instruction, memory_address); 
@@ -235,7 +236,7 @@ void Dissembler::read_file(char* input_file, map<int,Abstract*>* memory){
                 if(!is_data){
                         memory->insert(make_pair(memory_address,parse_opcode(binary_instruction,is_data,memory_address)));
                 }else{
-                        memory->insert(make_pair(memory_address, (new Abstract(binary_instruction, memory_address, DataType))));
+                        memory->insert(make_pair(memory_address, (new Abstract(binary_instruction, memory_address, DATATYPE))));
                 }
                 memory_address+=4;
         }

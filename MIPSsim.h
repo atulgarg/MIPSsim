@@ -2,6 +2,7 @@
 #define _MIPSSIM_H_
 #include<iostream>
 #include<map>
+#include<vector>
 #include<fstream>
 #include<cstring>
 #include<cstdlib>
@@ -18,7 +19,8 @@ class MIPSsim{
         public:
         MIPSsim(char* inputfile, char* outputfile);
         void dissemble();
-        void simulate(int m,int n);
+        vector<string> simulate(int m,int n);
         void print_memory();
+        void print_cycle(vector<string> cycleOutput);
 };
 #endif

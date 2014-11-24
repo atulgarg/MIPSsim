@@ -5,22 +5,28 @@
 #include<iostream>
 #include<sstream>
 #include<climits>
-#include "PipelineUnits.h"
 using namespace std;
-enum Instruction_Type {IType, RType , JType, DataType, BreakType};
+enum Instruction_Type {ITYPE, RTYPE , JTYPE, DATATYPE, BREAKTYPE, NOPTYPE};
 class Abstract{
         string binary_instruction;
         int memory;
         Instruction_Type instructionType;
+        int value;
         public:
         Abstract(string binary_instruction, int memory,Instruction_Type instructionType){
                 this->binary_instruction = binary_instruction;
                 this->memory = memory;
                 this->instructionType = instructionType;
+                this->value = convert_2_s_complement_to_int_16_32(binary_instruction);
+        }
+        Abstract(int value, int memory){
+                this->value = value;
+                this->memory = memory;
+                this->instructionType = DATATYPE;
         }
         virtual string print(){
                 stringstream ss;
-                ss<<binary_instruction <<" "<<memory<<" "<<convert_2_s_complement_to_int_16_32(binary_instruction);
+                ss<<binary_instruction <<" "<<memory<<" "<<value;
                 return ss.str();
         }
         string getInstruction(){
@@ -74,50 +80,46 @@ class Instruction: public Abstract{
                                 << getMemory();
                         return ss.str();
                 }
-                void decodeUtility(int reg, int& Vj,int& Qj, RegisterStat registerStat, RegisterFile registerFile, ROB rob){
-                        if(registerStat.registerBusy(reg)){
-                                int h = registerStat.getRegisterReorderEntryID(reg);
-                                if(rob.state(h) == ROB_WRITE_RESULT){
-                                        Vj = rob.value(h);
-                                        Qj = -1;
-                                }else{
-                                        Qj = h;
-                                }
-                        }else{
-                                Vj = registerFile.getRegisterValue(reg);
-                                Qj = -1;
-                        }
-                }
-
-                RSEntry* decodeInstruction(RegisterStat registerStat, RegisterFile registerFile,ROB rob, int cycle){
-                        //TODO virtul
-                }
-                int getDestination(){
+                virtual int getDestination(){
                         //TODO virtual
+                }
+                virtual bool isStore(){
+                        return false;
+                }
+                virtual bool isLoad(){
+                        return false;
+                }
+                virtual bool isBranch(){
+                        return false;
+                }
+                virtual bool isNOP(){
+                        return false;
+                }
+                virtual bool isBreak(){
+                        return false;
+                }
+                virtual bool isJump(){
+                        return false;
+                }
+                virtual int execute(int rs, int rt){
+                        cout<<"Should not come here ever"<<endl;
                 }
 };
 class R_Instruction : public Instruction{
         public:
+                friend class DecodeUtility;
+                friend class ALUUnit;
                 short int rs; 
                 short int rt; 
                 short int rd; 
                 short int sd; 
                 short int function;
-                stringstream ss;
-                R_Instruction(string instruction, int memory): Instruction(instruction, memory, RType){
+                R_Instruction(string instruction, int memory): Instruction(instruction, memory, RTYPE){
                         this->rs = convert_binary_string_to_int(instruction.substr(6,5));
                         this->rt = convert_binary_string_to_int(instruction.substr(11,5));
                         this->rd = convert_binary_string_to_int(instruction.substr(16,5));
                         this->sd = convert_binary_string_to_int(instruction.substr(21,5));
                         this->function = convert_binary_string_to_int(instruction.substr(26,6));
-                }
-                RSEntry* decodeInstruction(RegisterStat registerStat, RegisterFile registerFile,ROB rob, int cycle){
-                        int Qj,Qk,Vj,Vk;
-                        decodeUtility(rs,Vj,Qj,registerStat, registerFile,rob);
-                        decodeUtility(rt,Vk,Qk,registerStat, registerFile, rob);
-                        int A;          //TODO fix!!
-                        RSEntry* reservationStation = new RSEntry(this,true,Vj,Vj,Qj,Qk,A,cycle);
-                        return reservationStation; 
                 }
                 int getDestination(){
                         return rd;
@@ -125,24 +127,17 @@ class R_Instruction : public Instruction{
 };
 class I_Instruction : public Instruction{
         public:
+                friend class ALUUnit;
                 int rs;
                 int rt;
                 int immediate;
-                stringstream ss;
-                I_Instruction(string instruction, int memory): Instruction(instruction, memory, IType){
+                I_Instruction(string instruction, int memory): Instruction(instruction, memory, ITYPE){
                         this->rs = convert_binary_string_to_int(instruction.substr(6,5));
                         this->rt = convert_binary_string_to_int(instruction.substr(11,5));
                         this->immediate = convert_2_s_complement_to_int_16_32(instruction.substr(16,16));
                 }
                 virtual int getImmediate(){
                         return immediate;
-                }
-                RSEntry* decodeInstruction(RegisterStat registerStat, RegisterFile registerFile,ROB rob, int cycle){
-                        int Qj,Qk,Vj,Vk;
-                        decodeUtility(rt,Vk,Qk,registerStat, registerFile, rob);
-                        int A;          //TODO fix!!
-                        RSEntry* reservationStation = new RSEntry(this,true,Vj,Vj,Qj,Qk,A,cycle);
-                        return reservationStation; 
                 }
                 int getDestination(){
                         return rt;
@@ -151,31 +146,34 @@ class I_Instruction : public Instruction{
 class J_Instruction : public Instruction{
         private:
                 int target;
-                stringstream ss;
-        public:
-                J_Instruction(string instruction, int memory): Instruction(instruction, memory, JType){
+                public:
+                friend class ALUUnit;
+                J_Instruction(string instruction, int memory): Instruction(instruction, memory, JTYPE){
                         this->target = convert_binary_string_to_int(instruction.substr(6,26))<<2;
                 }
                 virtual string print(){
+                        stringstream ss;
                         ss<<Instruction::print()<<" J #"<<target;
                         return ss.str();
                 }
-                RSEntry* decodeInstruction(RegisterStat registerStat, RegisterFile registerFile,ROB rob, int cycle){
-                        //TODO
+                bool isJump(){
+                        return true;
                 }
-
+                virtual int execute(){
+                        
+                }
 };
 class BREAK: public Instruction{
         public:
-                BREAK(string instruction, int memory): Instruction(instruction, memory, BreakType){
+                friend class ALUUnit;
+                BREAK(string instruction, int memory): Instruction(instruction, memory, BREAKTYPE){
                 }   
                 virtual string print(){
-                return  Instruction::print() + " BREAK";
+                        return  Instruction::print() + " BREAK";
                 }
-                RSEntry* decodeInstruction(RegisterStat registerStat, RegisterFile registerFile,ROB rob, int cycle){
-                        //TODO
+                bool isBreak(){
+                        return true;
                 }
-
 };
 //R Type instructions
 class Sll: public R_Instruction{
@@ -183,8 +181,12 @@ class Sll: public R_Instruction{
                 Sll(string instruction, int memory): R_Instruction(instruction, memory){
                 }
                 virtual string print(){
+                        stringstream ss;
                         ss<< Instruction::print() << " SLL R" << rd << ", R" << rt << ", #" << sd;
                         return ss.str();
+                }
+                virtual int execute(int rs, int rt){
+                        return rt<<sd;
                 }
 };
 class Srl: public R_Instruction{
@@ -192,8 +194,12 @@ class Srl: public R_Instruction{
                 Srl(string instruction, int memory): R_Instruction(instruction, memory){
                 }
                 virtual string print(){
+                        stringstream ss;
                         ss<< Instruction::print() << " SRL R" << rd << ", R" << rt << ", #" << sd;
                         return ss.str();
+                }
+                virtual int execute(int rs, int rt){
+                        return rt>>sd;
                 }
 };
 class Sra: public R_Instruction{
@@ -201,8 +207,13 @@ class Sra: public R_Instruction{
                 Sra(string instruction, int memory): R_Instruction(instruction, memory){
                 }
                 virtual string print(){
+                        stringstream ss;
                         ss<< Instruction::print() << " SRA R" << rd << ", R" << rt << ", #" << sd;
                         return ss.str();
+                }
+                virtual int execute(int rs,int rt){
+                        //TODO sign
+                        return rt >> sd; 
                 }
 };
 class Sub: public R_Instruction{
@@ -210,8 +221,13 @@ class Sub: public R_Instruction{
                 Sub(string instruction, int memory): R_Instruction(instruction,memory){
                 }
                 virtual string print(){
+                        stringstream ss;
                         ss<< Instruction::print() << " SUB R" << rd << ", R" << rs << ", " << rt;
                         return ss.str();
+                }
+                virtual int execute(int rs, int rt){
+                        //TODO unsigned overflow.
+                        return (rs-rt);
                 }
 };
 class Sltu: public R_Instruction{
@@ -219,8 +235,15 @@ class Sltu: public R_Instruction{
                 Sltu(string instruction, int memory): R_Instruction(instruction,memory){
                 }
                 virtual string print(){
+                        stringstream ss;
                         ss<< Instruction::print() << " SLTU R" << rd << ", R" << rs << ", R" << rt;
                         return ss.str();
+                }
+                virtual int execute(int rs, int rt){
+                        //TODO unsigned comparison.
+                        if(rs < rt)
+                                return 1;
+                        return 0;
                 }
 };
 class Subu: public R_Instruction{
@@ -228,8 +251,12 @@ class Subu: public R_Instruction{
                 Subu(string instruction, int memory): R_Instruction(instruction, memory){
                 }
                 virtual string print(){
+                        stringstream ss;
                         ss<< Instruction::print() << " SUBU R" << rd << ", R" << rs << ", R" << rt;
                         return ss.str();
+                }
+                virtual int execute(int rs, int rt){
+                        return rs-rt;
                 }
 };
 class Add: public R_Instruction{
@@ -237,8 +264,13 @@ class Add: public R_Instruction{
                 Add(string instruction, int memory): R_Instruction(instruction,memory){
                 }
                 virtual string print(){
+                        stringstream ss;
                         ss<< Instruction::print() << " ADD R" << rd << ", R" << rs << ", R" << rt;
                         return ss.str();
+                }
+                //TODO overflow??
+                virtual int execute(int rs, int rt){
+                        return rs + rt;
                 }
 };
 class Addu: public R_Instruction{
@@ -246,8 +278,12 @@ class Addu: public R_Instruction{
                 Addu(string instruction, int memory): R_Instruction(instruction, memory){
                 }
                 virtual string print(){
+                        stringstream ss;
                         ss<< Instruction::print() << " ADDU R" << rd << ", R" << rs << ", R" << rt;
                         return ss.str();
+                }
+                virtual int execute(int rs, int rt){
+                        return rs + rt;
                 }
 };
 class And: public R_Instruction{
@@ -255,8 +291,12 @@ class And: public R_Instruction{
                 And(string instruction, int memory): R_Instruction(instruction, memory){
                 }
                 virtual string print(){
+                        stringstream ss;
                         ss<< Instruction::print() << " AND R" << rd << ", R" << rs << ", R" << rt;
                         return ss.str();
+                }
+                virtual int execute(int rs, int rt){
+                        return (rs & rt);
                 }
 };
 class Or: public R_Instruction{
@@ -264,8 +304,12 @@ class Or: public R_Instruction{
                 Or(string instruction, int memory): R_Instruction(instruction, memory){
                 }
                 virtual string print(){
+                        stringstream ss;
                         ss<< Instruction::print() << " OR R" << rd << ", R" << rs << ", R" << rt;
                         return ss.str();
+                }
+                virtual int execute(int rs, int rt){
+                        return (rs | rt);
                 }
 };
 class Xor: public R_Instruction{
@@ -273,8 +317,12 @@ class Xor: public R_Instruction{
                 Xor(string instruction, int memory): R_Instruction(instruction, memory){
                 }
                 virtual string print(){
+                        stringstream ss;
                         ss<< Instruction::print() << " XOR R" << rd << ", R" << rs << ", R" << rt;
                         return ss.str();
+                }
+                virtual int execute(int rs, int rt){
+                        return rs^rt;
                 }
 };
 class Nor: public R_Instruction{
@@ -282,16 +330,23 @@ class Nor: public R_Instruction{
                 Nor(string instruction, int memory): R_Instruction(instruction, memory){
                 }
                 virtual string print(){
+                        stringstream ss;
                         ss<< Instruction::print() << " NOR R" << rd << ", R" << rs << ", R" << rt;
                         return ss.str();
                 }
+                virtual int execute(int rs, int rt){
+                        return (~(rs|rt));
+                }
 };
-class Nop: public R_Instruction{
+class Nop: public Instruction{
         public:
-                Nop(string instruction, int memory): R_Instruction(instruction, memory){
+                Nop(string instruction, int memory): Instruction(instruction, memory, NOPTYPE){
                 }
                 virtual string print(){
                         return Instruction::print() + " NOP";
+                }
+                bool isNOP(){
+                        return true;
                 }
 };
 class Slt: public R_Instruction{
@@ -299,8 +354,14 @@ class Slt: public R_Instruction{
                 Slt(string instruction, int memory): R_Instruction(instruction, memory){
                 }
                 virtual string print(){
+                        stringstream ss;
                         ss<< Instruction::print() << " SLT R" << rd << ", R" << rs << ", R" << rt;
                         return ss.str();
+                }
+                virtual int execute(int rs, int rt){
+                        if(rs < rt)
+                                return 1;
+                        return 0;
                 }
 };
 //I Type Instructions
@@ -309,8 +370,12 @@ class Sw: public I_Instruction{
                 Sw(string instruction, int memory): I_Instruction(instruction, memory){
                 }
                 virtual string print(){
+                        stringstream ss;
                         ss<< Instruction::print() << " SW R" << rt << ", " << immediate << "(R" << rs << ")";
                         return ss.str();
+                }
+                bool isStore(){
+                        return true;
                 }
 };
 class Lw: public I_Instruction{
@@ -318,9 +383,14 @@ class Lw: public I_Instruction{
                 Lw(string instruction, int memory): I_Instruction(instruction, memory){
                 }
                 virtual string print(){
+                        stringstream ss;
                         ss<< Instruction::print() << " LW R" << rt << ", " << immediate << "(R" << rs << ")";
                         return ss.str();
                 }
+                bool isLoad(){
+                        return true;
+                }
+                
 };
 class Beq: public I_Instruction{
         public:
@@ -330,8 +400,18 @@ class Beq: public I_Instruction{
                         return immediate<<2;
                 }
                 virtual string print(){
+                        stringstream ss;
                         ss<< Instruction::print() << " BEQ R" << rs << ", R" << rt << ", #" <<getImmediate();
                         return ss.str();
+                }
+                virtual int execute(int rs,int rt){
+                        if(rs == rt)
+                                return getMemory() + 4 + getImmediate();
+                        else
+                                return getMemory() + 4;
+                }
+                bool isBranch(){
+                        return true;
                 }
 };
 class Bne: public I_Instruction{
@@ -343,9 +423,21 @@ class Bne: public I_Instruction{
                 }
 
                 virtual string print(){
+                        stringstream ss;
                         ss<< Instruction::print() << " BNE R" << rs << ", R" << rt << ", #" << getImmediate();
                         return ss.str();
                 }
+                bool isBranch(){
+                        return true;
+                }
+                virtual int execute(int rs, int rt){
+                        if(rs != rt)
+                                return getMemory() + 4 + getImmediate();
+                        else
+                                return getMemory() + 4;
+
+                }
+
 };
 class Bgez: public I_Instruction{
         public:
@@ -355,9 +447,20 @@ class Bgez: public I_Instruction{
                         return immediate<<2;
                 }
                 virtual string print(){
+                        stringstream ss;
                         ss<< Instruction::print() << " BGEZ R" << rs << ", #" << getImmediate();
                         return ss.str();
                 }
+                bool isBranch(){
+                        return true;
+                }
+                virtual int execute(int rs, int rt){
+                        if(rs >= 0)
+                                return getMemory() + 4 + getImmediate();
+                        else
+                                return getMemory() + 4;
+                }
+
 };
 class Bgtz: public I_Instruction{
         public:
@@ -367,9 +470,20 @@ class Bgtz: public I_Instruction{
                         return immediate<<2;
                 }
                 virtual string print() {
+                        stringstream ss;
                         ss<< Instruction::print() << " BGTZ R" << rs << ", #" << getImmediate();
                         return ss.str();
                 }
+                bool isBranch(){
+                        return true;
+                }
+                virtual int execute(int rs, int rt){
+                        if(rs > 0)
+                                return getMemory() + 4 + getImmediate();
+                        else
+                                return getMemory() + 4;
+                }
+
 };
 class Blez: public I_Instruction{
         public:
@@ -379,9 +493,20 @@ class Blez: public I_Instruction{
                         return immediate<<2;
                 }
                 virtual string print(){
+                        stringstream ss;
                         ss<< Instruction::print() << " BLEZ R" << rs << ", #" << getImmediate();
                         return ss.str();
                 }
+                bool isBranch(){
+                        return true;
+                }
+                virtual int execute(int rs, int rt){
+                        if(rs <= 0)
+                                return getMemory() + 4 + getImmediate();
+                        else
+                                return getMemory() + 4;
+                }
+
 };
 class Bltz: public I_Instruction{
         public:
@@ -391,17 +516,33 @@ class Bltz: public I_Instruction{
                         return immediate<<2;
                 }
                 virtual string print(){
+                        stringstream ss;
                         ss<< Instruction::print() << " BLTZ R" << rs << ", #" <<getImmediate();
                         return ss.str();
                 }
+                bool isBranch(){
+                        return true;
+                }
+                virtual int execute(int rs, int rt){
+                        if(rs < 0)
+                                return getMemory() + 4 + getImmediate();
+                        else
+                                return getMemory() + 4;
+                }
+
 };
 class Addi: public I_Instruction{
         public:
                 Addi(string instruction, int memory): I_Instruction(instruction,memory){
                 }
                 virtual string print(){
+                        stringstream ss;
                         ss<< Instruction::print() << " ADDI R" << rt << ", R" << rs << ", #" << immediate;
                         return ss.str();
+                }
+                virtual int execute(int rs, int rt){
+                        //TODO overflow
+                        return rs + getImmediate();
                 }
 };
 class Addiu: public I_Instruction{
@@ -409,8 +550,12 @@ class Addiu: public I_Instruction{
                 Addiu(string instruction, int memory): I_Instruction(instruction,memory){
                 }
                 virtual string print(){
+                        stringstream ss;
                         ss<< Instruction::print() << " ADDIU R" << rt << ", R" << rs << ", #" << immediate;
                         return ss.str();
+                }
+                virtual int execute(int rs, int rt){
+                        return rs+ getImmediate();
                 }
 };
 class Slti: public I_Instruction{
@@ -418,8 +563,14 @@ class Slti: public I_Instruction{
                 Slti(string instruction, int memory): I_Instruction(instruction,memory){
                 }
                 virtual string print(){
+                        stringstream ss;
                         ss<< Instruction::print() << " SLTI R" << rt << ", R" << rs << ", #" << immediate;
                         return ss.str();
+                }
+                virtual int execute(int rs, int rt){
+                        if(rs < immediate)
+                                return 1;
+                        return 0;
                 }
 };
 #endif
