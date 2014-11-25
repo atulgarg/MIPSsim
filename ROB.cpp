@@ -45,8 +45,10 @@ ROB::ROB(int max_entries){
 vector<string> ROB::print(){
         vector<string> robEntries;
         if(!isEmpty()){
-                for(int i=front;i<=rear;i=(i+1)%max_entries)
+                debug("Front ::%d Rear :: %d",front,rear);
+                for(int i=front;i<=rear;i++){
                         robEntries.push_back(rob[i]->getInstruction()->print(false));
+                }
         }
         return robEntries;
 }
@@ -63,7 +65,7 @@ int ROB::push(ROBEntry* robEntry){
                 rob[rear] = robEntry;
         }else{
                 assert(true);
-                cout<<"ROB full. Cannot add something is wrong should not reach here."<<endl;
+                log_err("ROB full. Cannot add something is wrong should not reach here.");
                 exit(0);
         }
         return rear;

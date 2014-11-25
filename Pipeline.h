@@ -5,6 +5,7 @@
 #include "Instructions.h"
 #include "DecodeUtility.h"
 #include "BTB.h"
+#include "dbg.h"
 #include<deque>
 #include<vector>
 #include<map>

@@ -36,30 +36,36 @@ Pipeline::Pipeline(int numReservationStations, int numROBEntry, int numberOfRegi
           }
 
 vector<string> Pipeline::printPipeline(){
-        cout<<"printPipeline"<<endl;
+        debug("printPipeline");
         vector<string> pipelineInstructions;
+        
+        debug("printing IQ");
         pipelineInstructions.push_back("IQ:");
         deque<pair<int,Instruction*> >::iterator instructionQueueIter = instruction_queue.begin();
         for(;instructionQueueIter!=instruction_queue.end();++instructionQueueIter){
                 pipelineInstructions.push_back(instructionQueueIter->second->print(false));
         }
 
+        debug("Printing RS ");
         pipelineInstructions.push_back("RS:");
         vector<string> reservationsStationInstructions = reservationStations.print();
         pipelineInstructions.insert(pipelineInstructions.end(),
                         reservationsStationInstructions.begin(),
                         reservationsStationInstructions.end());
         
+        debug("Printing ROB");
         pipelineInstructions.push_back("ROB:");
         vector<string> ROBInstructions = rob.print();
         pipelineInstructions.insert(pipelineInstructions.end(),
                         ROBInstructions.begin(),
                         ROBInstructions.end());
-
+        
+        debug("Printing BTB");
         pipelineInstructions.push_back("BTB:");
         vector<string> BTBTable = btb.print();
         pipelineInstructions.insert(pipelineInstructions.end(), BTBTable.begin(), BTBTable.end());
 
+        debug("Printing Register Values");
         pipelineInstructions.push_back("Registers:");
         vector<string> registerValues = registerFile.print();
         pipelineInstructions.insert(pipelineInstructions.end(), registerValues.begin(), registerValues.end());
@@ -75,7 +81,7 @@ void Pipeline::resetPipeline(int robID, int PC){
 }
 void Pipeline::instructionFetch(int cycle){
         if(PC < 716){
-                cout<<"Instruction Fetch open:"<<cycle<<endl;
+                debug("Instruction Fetch open:");
                 Instruction* nextInstruction = (Instruction*)memory_map->find(PC)->second;
                 if(nextInstruction!=NULL){
                         if(nextInstruction->isBranch()){
@@ -85,13 +91,13 @@ void Pipeline::instructionFetch(int cycle){
                                 PC = PC + 4;
                         instruction_queue.push_back(make_pair(cycle,(Instruction*)nextInstruction));
                 }else{
-                        cout<<"No more instructions in memory"<<endl;
+                        log_warn("No more instructions in memory");
                 }
         }
-        cout<<"Instruction Fetch close: "<<cycle<<endl;
+        debug("Instruction Fetch close: ");
 }
 void Pipeline::decodeAndIssue(int cycle){
-        cout<<"Decode and Issue Open"<<cycle<<endl;
+        debug("Decode and Issue Open");
         if(!instruction_queue.empty() && !rob.isFull()
                         && instruction_queue.front().first < cycle) {
                 Instruction* nextInstruction = instruction_queue.front().second;
@@ -113,12 +119,12 @@ void Pipeline::decodeAndIssue(int cycle){
                         reservationStationEntry->updateROBId(robID);
                 }
         }else{
-                cout<<"Instruction Queue empty or rs full or rob full or no instruction for this cycle."<<endl;
+                log_warn("Instruction Queue empty or rs full or rob full or no instruction for this cycle.");
         }
-        cout<<"Decode and Issue Close " <<cycle<<endl;
+        debug("Decode and Issue Close ");
 }
 void Pipeline::execute(int cycle){
-        cout<<"Execute Open:"<<cycle<<endl;
+        debug("Execute Open:");
         reservationStations.updateStations(CDB);
         CDB.clear();
         vector<RSEntry*> toBeExecuted = reservationStations.checkPendingReservationStations(cycle);
@@ -132,10 +138,10 @@ void Pipeline::execute(int cycle){
                         executedInstruction.push_back(make_pair(rs,cycle));
                 }
         }
-        cout<<"Execute End:"<<cycle<<endl;
+        debug("Execute End:");
 }
 void Pipeline::writeResult(int cycle){
-        cout<<"WriteResult Open"<<cycle<<endl;
+        debug("WriteResult Open");
         //write result to ROB and waiting RS through CDB
         vector<pair<RSEntry*,int> >::iterator executedInstructionIter = executedInstruction.begin();
         vector<pair<RSEntry*,int> > remainingInstructions;
@@ -167,11 +173,11 @@ void Pipeline::writeResult(int cycle){
         }
         executedInstruction.clear();
         executedInstruction.insert(executedInstruction.end(),remainingInstructions.begin(),remainingInstructions.end());
-        cout<<"WriteResult Close"<<cycle<<endl;
+        debug("WriteResult Close");
         //Store, Jump Branch NOP and break skip this stage.
 }
 bool Pipeline::commit(int cycle){
-        cout<<"Commit Open "<<cycle<<endl;
+        debug("Commit Open ");
         if(!rob.isEmpty() 
                         && rob.peek()->getState() == ROB_COMMIT 
                         && rob.peek()->getCycle() < cycle){
@@ -194,5 +200,5 @@ bool Pipeline::commit(int cycle){
                 if(registerStat.getRegisterReorderEntryID(destination) == rob.getHeadID())
                         registerStat.updateRegister(destination, false, -1);
         }
-        cout<<"Commit Close "<<cycle<<endl;
+        debug("Commit Close ");
 }

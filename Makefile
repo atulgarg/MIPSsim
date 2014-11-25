@@ -40,4 +40,4 @@ ROBTest.o: ROBTest.cpp
 ReservationStation.o: ReservationStation.cpp
 	$(CC) $(CFLAGS) ReservationStation.cpp
 clean:
-	rm -rf *.o MIPSsim ROBTest
+	rm -rf *.o MIPSsim ROBTest output.txt

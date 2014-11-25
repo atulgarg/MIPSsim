@@ -1,6 +1,7 @@
 #ifndef _ROB_H_
 #define _ROB_H_
 #include "Instructions.h"
+#include "dbg.h"
 #include<cstdlib>
 #include<assert.h>
 #include<vector>
