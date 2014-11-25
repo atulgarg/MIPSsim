@@ -45,7 +45,7 @@ ROB::ROB(int max_entries){
 vector<string> ROB::print(){
         vector<string> robEntries;
         if(!isEmpty()){
-                for(int i=front;i<rear;i=(i+1)%max_entries)
+                for(int i=front;i<=rear;i=(i+1)%max_entries)
                         robEntries.push_back(rob[i]->getInstruction()->print(false));
         }
         return robEntries;

@@ -15,6 +15,7 @@ ADDI R6, R0, #1
 RS:
 ADDI R8, R0, #44
 ROB:
+ADDI R8, R0, #44
 BTB:
 Registers:
 R00: 0 0 0 0 0 0 0 0 
@@ -29,6 +30,7 @@ ADDI R8, R0, #44
 ADDI R6, R0, #1
 ROB:
 ADDI R8, R0, #44
+ADDI R6, R0, #1
 BTB:
 Registers:
 R00: 0 0 0 0 0 0 0 0 
@@ -45,6 +47,7 @@ SW R6, 716(R0)
 ROB:
 ADDI R8, R0, #44
 ADDI R6, R0, #1
+SW R6, 716(R0)
 BTB:
 Registers:
 R00: 0 0 0 0 0 0 0 0 
@@ -55,37 +58,16 @@ Cycle <5>:
 IQ:
 SW R6, 716(R7)
 RS:
-ADDI R8, R0, #44
 ADDI R6, R0, #1
 SW R6, 716(R0)
 ADDI R7, R0, #4
 ROB:
-ADDI R8, R0, #44
-ADDI R6, R0, #1
-SW R6, 716(R0)
-BTB:
-Registers:
-R00: 0 0 0 0 0 0 0 0 
-R08: 0 0 0 0 0 0 0 0 
-R16: 0 0 0 0 0 0 0 0 
-R24: 0 0 0 0 0 0 0 0 
-Cycle <6>:
-IQ:
-ADDI R10, R0, #8
-RS:
-ADDI R8, R0, #44
-ADDI R6, R0, #1
-SW R6, 716(R0)
-ADDI R7, R0, #4
-SW R6, 716(R7)
-ROB:
-ADDI R8, R0, #44
 ADDI R6, R0, #1
 SW R6, 716(R0)
 ADDI R7, R0, #4
 BTB:
 Registers:
 R00: 0 0 0 0 0 0 0 0 
-R08: 0 0 0 0 0 0 0 0 
+R08: 44 0 0 0 0 0 0 0 
 R16: 0 0 0 0 0 0 0 0 
 R24: 0 0 0 0 0 0 0 0 

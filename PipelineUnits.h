@@ -16,7 +16,7 @@ class RSEntry{
         bool busy;
         int A;
         int reorderEntryID, destination, cycle, numCycles;          //number of cycles required for execution.
-        int result;
+        int result, robID;
         public:
         int ROBId_Qj, ROBId_Qk, Vj, Vk;
         RSEntry(Instruction* instruction,bool busy,int Vj,int Vk,int ROBId_Qj,int ROBId_Qk,int A,int cycle, int numCycles);

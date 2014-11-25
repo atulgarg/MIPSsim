@@ -31,8 +31,7 @@ RSEntry* DecodeUtility::decodeITypeInstruction(I_Instruction* instruction, int c
         decodeUtility(instruction->rs, Vj, Qj);
         //Qk Vk not required.
         Qk = -1; Vk = 0;
-        int numCycles = 1;
-        RSEntry* reservationStation = new RSEntry(instruction, true, Vj, Vk, Qj, Qk, -1, cycle, numCycles);
+        RSEntry* reservationStation = new RSEntry(instruction, true, Vj, Vk, Qj, Qk, -1, cycle, 1);
         return reservationStation; 
 }
 RSEntry* DecodeUtility::decodeLoadStoreInstruction(I_Instruction* instruction, int cycle){
@@ -41,15 +40,13 @@ RSEntry* DecodeUtility::decodeLoadStoreInstruction(I_Instruction* instruction, i
         int A = instruction->getImmediate();
         //Qk Vk not required.
         Qk = -1; Vk = 0;
-        int numCycles = 2;
-        RSEntry* reservationStation = new RSEntry(instruction, true, Vj, Vk, Qj, Qk, A, cycle, numCycles);
+        RSEntry* reservationStation = new RSEntry(instruction, true, Vj, Vk, Qj, Qk, A, cycle, 2);
         return reservationStation; 
 }
 RSEntry* DecodeUtility::decodeJTypeInstruction(J_Instruction* instruction, int cycle){
-
-}
-RSEntry* DecodeUtility::decodeBreakTypeInstruction(BREAK* instruction, int cycle){
-
+        int Qj=-1,Qk=-1,Vj=0,Vk=0;  //none required.
+        RSEntry* reservationStation = new RSEntry(instruction, true, Vj, Vk, Qj, Qk, -1, cycle, 1);
+        return reservationStation; 
 }
 RSEntry* DecodeUtility::decodeInstruction(Instruction* instruction,int cycle){
         if(instruction->isLoad() || instruction->isStore())
@@ -60,6 +57,4 @@ RSEntry* DecodeUtility::decodeInstruction(Instruction* instruction,int cycle){
                 return decodeRTypeInstruction((R_Instruction*)instruction,cycle);
         else if(instruction->getType() == JTYPE)
                 return decodeJTypeInstruction((J_Instruction*)instruction, cycle);
-        else if(instruction->getType() == BREAKTYPE)
-                return decodeBreakTypeInstruction((BREAK*)instruction, cycle);
 }

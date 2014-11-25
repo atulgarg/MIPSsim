@@ -88,7 +88,6 @@ void Pipeline::instructionFetch(int cycle){
 }
 void Pipeline::decodeAndIssue(int cycle){
         cout<<"Decode and Issue Open"<<cycle<<endl;
-        //check if there is empty reservation station and rob entry 
         if(!instruction_queue.empty() && !rob.isFull()
                         && instruction_queue.front().first < cycle) {
                 Instruction* nextInstruction = instruction_queue.front().second;
@@ -96,17 +95,18 @@ void Pipeline::decodeAndIssue(int cycle){
                         = new ROBEntry(true, nextInstruction, ROB_EXECUTE, nextInstruction->getDestination());
 
                 if(nextInstruction->isBreak() || nextInstruction->isNOP()){
+                        //TODO decode break and NOP
                         instruction_queue.pop_front();
                         int robID = rob.push(robEntry);
                         rob.update(robID, 0, cycle, ROB_COMMIT);
                 }else if(!reservationStations.isFull()){
                         instruction_queue.pop_front();
-                        //rs reservation station fetch from station
                         RSEntry* reservationStationEntry 
                                 = decodeUtility.decodeInstruction(nextInstruction, cycle);
                         reservationStations.addStation(reservationStationEntry);
                         int robID = rob.push(robEntry);
                         robToRS[robID]=reservationStationEntry;
+                        cout<<"ROBID "<<robID<<endl;
                         reservationStationEntry->updateReorderID(robID);
                 }
         }else{
@@ -125,20 +125,24 @@ void Pipeline::execute(int cycle){
                 aluUnit.execute(rs,&rob,memory_map);
                 if(rs->getRemainingCycles() == 0){
                         //execute then check if complete to move it to next stage.
+                        rs->print();
                         executedInstruction.push_back(make_pair(rs,cycle));
                 }
         }
+        cout<<"ExecutedInstruction:Size : "<<executedInstruction.size()<<endl;
         cout<<"Execute End:"<<cycle<<endl;
 }
 void Pipeline::writeResult(int cycle){
         cout<<"WriteResult Open"<<cycle<<endl;
         //write result to ROB and waiting RS through CDB
-        for(int i=0;i<executedInstruction.size();i++){
-                int instructionCycle = executedInstruction.at(i).second;
-                RSEntry* completedStation =  executedInstruction.at(i).first;
+        vector<pair<RSEntry*,int> >::iterator executedInstructionIter = executedInstruction.begin();
+        vector<pair<RSEntry*,int> > remainingInstructions;
+        for(;executedInstructionIter!=executedInstruction.end();++executedInstructionIter){
+                int instructionCycle = (*(executedInstructionIter)).second;
+                RSEntry* completedStation =  (*(executedInstructionIter)).first;
                 Instruction* instruction = completedStation->instruction;
                 int robID = completedStation->getReorderID();
-
+                cout<<"here Cycle: "<<cycle<<" Instruction Cycle : " <<instructionCycle<<endl; 
                 if(instructionCycle == cycle){
                         if(instruction->isStore()){
                                 rob.update(robID, completedStation->Vj, instructionCycle, ROB_COMMIT,completedStation->A);
@@ -147,17 +151,25 @@ void Pipeline::writeResult(int cycle){
                                 int result = completedStation->result;
                                 //computed value to ROB.
                                 rob.update(robID, result, instructionCycle, ROB_COMMIT);
+                        }else{
+                                remainingInstructions.push_back(make_pair(completedStation,instructionCycle));
                         }
                 }else if(instructionCycle < cycle){
-                        completedStation->instruction->print(false);
+                        cout<<"here too?? "<<instructionCycle<<endl;
+                        //TODO check
                         int result = completedStation->result;
                         //computed value to ROB.
+                        cout<<"Updating "<<robID<<endl;
                         rob.update(robID, result, cycle, ROB_COMMIT);
                         //write results to CDB
                         CDB[robID] = result;
+                }else{
+                        cout<<"remaining "<<endl;
+                        remainingInstructions.push_back(make_pair(completedStation,instructionCycle));
                 }
         }
         executedInstruction.clear();
+        executedInstruction.insert(executedInstruction.end(),remainingInstructions.begin(),remainingInstructions.end());
         cout<<"WriteResult Close"<<cycle<<endl;
         //Store, Jump Branch NOP and break skip this stage.
 }
@@ -166,6 +178,7 @@ bool Pipeline::commit(int cycle){
         if(!rob.isEmpty()){
         cout<<"State : "<<(rob.peek()->getState() == ROB_COMMIT)<<endl;
         cout<<"peek : "<<rob.peek()->getCycle()<<endl;
+        cout<<"instruction: "<<rob.peek()->getInstruction()->print(false)<<endl;
         }
         if(!rob.isEmpty() 
                         && rob.peek()->getState() == ROB_COMMIT 

@@ -440,10 +440,6 @@ class Lw: public I_Instruction{
                 bool isLoad(){
                         return true;
                 }
-                virtual int getDestination(){
-                        return -1;
-                }
-                
 };
 class Beq: public I_Instruction{
         public:
@@ -609,6 +605,7 @@ class Addi: public I_Instruction{
                 }
                 virtual int execute(int rs, int rt){
                         //TODO overflow
+                        cout<<"Addi execute hua"<<endl;
                         return rs + getImmediate();
                 }
 };
