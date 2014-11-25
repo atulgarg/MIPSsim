@@ -3,6 +3,7 @@
 
 #include "Instructions.h"
 #include "PipelineUnits.h"
+#include "ReservationStation.h"
 #include "ROB.h"
 class DecodeUtility{
         RegisterStat* registerStat;

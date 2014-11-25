@@ -4,8 +4,11 @@ CFLAGS=-c -g
 
 all: MIPSsim
 
-MIPSsim: MIPSsim.o Dissembler.o Pipeline.o PipelineUnits.o Simulator.o DecodeUtility.o BTB.o ROB.o
-	$(CC) MIPSsim.o Dissembler.o Pipeline.o PipelineUnits.o Simulator.o DecodeUtility.o BTB.o ROB.o -o MIPSsim
+MIPSsim: MIPSsim.o Dissembler.o Pipeline.o PipelineUnits.o Simulator.o DecodeUtility.o BTB.o ROB.o ReservationStation.o
+	$(CC) MIPSsim.o Dissembler.o Pipeline.o PipelineUnits.o Simulator.o DecodeUtility.o BTB.o ROB.o ReservationStation.o -o MIPSsim
+
+ROBTest: ROBTest.o ROB.o
+	$(CC) ROBTest.o ROB.o -o ROBTest
 
 MIPSsim.o: MIPSsim.cpp
 	$(CC) $(CFLAGS) MIPSsim.cpp
@@ -31,5 +34,10 @@ DecodeUtility.o: DecodeUtility.cpp
 BTB.o: BTB.cpp
 	$(CC) $(CFLAGS) BTB.cpp
 
+ROBTest.o: ROBTest.cpp
+	$(CC) $(CFLAGS) ROBTest.cpp
+
+ReservationStation.o: ReservationStation.cpp
+	$(CC) $(CFLAGS) ReservationStation.cpp
 clean:
-	rm -rf *.o MIPSsim
+	rm -rf *.o MIPSsim ROBTest

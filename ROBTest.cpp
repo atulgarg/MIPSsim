@@ -17,6 +17,8 @@ int main(){
         cout<<"next element from the queue "<<rob.getHeadID()<<endl;
         cout<<"Next entry inserted at"<<rob.push(robEntry4)<<endl;
         cout<<"Next entry inserted at"<<rob.push(robEntry5)<<endl;
+        cout<<"Resetting all entries after 3"<<endl;
+        rob.reset(3);
         cout<<"Next entry inserted at"<<rob.push(robEntry6)<<endl;
         if(rob.isFull())
                 cout<<"Correct rob Full"<<endl;

@@ -1,6 +1,7 @@
 #ifndef _PIPELINE_H_
 #define _PIPELINE_H_
 #include "PipelineUnits.h"
+#include "ReservationStation.h"
 #include "Instructions.h"
 #include "DecodeUtility.h"
 #include "BTB.h"
@@ -38,10 +39,11 @@ class Pipeline{
                 map<int, RSEntry*> robToRS;
                 DecodeUtility decodeUtility;
                 ALUUnit aluUnit;
+                void flushCDB();
+                void resetPipeline(int robID, int PC);
         public:
                 Pipeline(int numReservationStations, int numROBEntry, int numberOfRegister, 
                                 int numBTBEntries,map<int,Abstract*>* memory_map);
-                void flushCDB();
                 void instructionFetch(int cycle);
                 void decodeAndIssue(int cycle);
                 void execute(int cycle);

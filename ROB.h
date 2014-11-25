@@ -39,7 +39,7 @@ class ROB{
         ROBEntry* pop();
         bool isEmpty();
         bool isFull();
-        void flushAfter(int robID);
+        void reset(int robID);
         int value(int robID);
         ROBState state(int robID);
         void update(int robID, int value, int cycle, ROBState state);

@@ -9,41 +9,6 @@
 #include "Instructions.h"
 #include "BTB.h"
 
-class RSEntry{
-        friend class ALUUnit;
-        friend class Pipeline;
-        Instruction* instruction;
-        bool busy;
-        int A;
-        int reorderEntryID, destination, cycle, numCycles;          //number of cycles required for execution.
-        int result, robID;
-        public:
-        int ROBId_Qj, ROBId_Qk, Vj, Vk;
-        RSEntry(Instruction* instruction,bool busy,int Vj,int Vk,int ROBId_Qj,int ROBId_Qk,int A,int cycle, int numCycles);
-        bool isBusy();
-        void setBusy(bool busy);
-        void updateReorderID(int reorderEntryID);
-        int getReorderID();
-        int getCycle();
-        bool isReady();
-        int getDestination();
-        int execute();
-        int getRemainingCycles();
-        std::string print();
-};
-class ReservationStations{
-        std::vector<RSEntry*> reservationStations;
-        int currently_used;
-        int max_stations;
-        public:
-        ReservationStations(int max_stations);
-        bool isFull();
-        bool addStation(RSEntry* reservationStation);
-        void updateStations(std::map<int,int> CDB);
-        std::vector<RSEntry*> checkPendingReservationStations(int cycle);
-        void remove(RSEntry* reservationStation);
-        std::vector<std::string> print();
-};
 class RegisterStatEntry{
         bool busy;
         int reorderEntryID;                 //id for reorder entry

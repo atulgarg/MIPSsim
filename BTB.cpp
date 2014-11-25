@@ -1,4 +1,8 @@
 #include "BTB.h"
+BTBEntry::BTBEntry(int targetAddress, Prediction prediction){
+        this->predictedAddress = targetAddress;
+        this->prediction = prediction;
+}
 BTB::BTB(int max_entries){
         this->max_entries = max_entries;
 }
@@ -13,12 +17,13 @@ int BTB::predict(int instructionAddress){
         return instructionAddress + 4;
 }
 void BTB::update(int instructionAddress, int targetAddress){
-        if(btbMap.size() < max_entries){
-                map<int, list<BTBEntry>::iterator>::iterator iter = btbMap.find(instructionAddress);
-                //there exists old entry for btb.
-                if(iter!=btbMap.end()){
-                }
+        if(btbMap.find(instructionAddress)!=btbMap.end())
+                btbList.erase(btbMap.find(instructionAddress)->second);
+        else if(btbList.size()>= max_entries){
+                btbList.pop_back();
         }
+
+        btbList.push_front(BTBEntry(targetAddress,PREDICTION_TAKEN));
 }
 vector<string> BTB::print(){
         vector<string> output;

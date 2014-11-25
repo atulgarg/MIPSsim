@@ -87,10 +87,10 @@ bool ROB::isEmpty(){
                 return true;
         return false;
 }
-void ROB::flushAfter(int robID){
+void ROB::reset(int robID){
         //TODO
-       //Set Null all the ID's after the given ID. 
-       front = rear = -1;
+       //Set Null all the ID's after the given ID.
+       rear = robID;
 }
 int ROB::value(int robID){
         return rob[robID]->getValue();

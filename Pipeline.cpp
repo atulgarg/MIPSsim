@@ -4,14 +4,14 @@ void ALUUnit::execute(RSEntry* reservationStation, ROB* rob,map<int,Abstract*>* 
         if(instruction->isLoad() || instruction->isStore()){
                 if(reservationStation->numCycles == 2){
                         //address calculation
-                        if(rob->allAddressComputedBefore(reservationStation->getReorderID())){
+                        if(rob->allAddressComputedBefore(reservationStation->getROBId())){
                                 int memoryAddress = instruction->execute(reservationStation->Vj,reservationStation->Vk);
                                 reservationStation->A = memoryAddress;
                                 //TODO need to check if it was not updated in the same cycle.
                                 reservationStation->numCycles =  reservationStation->numCycles -1;
                         }
                 }else{
-                        if(instruction->isLoad() && rob->noPendingStore(reservationStation->getReorderID())){
+                        if(instruction->isLoad() && rob->noPendingStore(reservationStation->getROBId())){
                                 reservationStation->result = memory->find(reservationStation->A)->second->getValue();
                                 reservationStation->numCycles--;
                         }else if(instruction->isStore()){
@@ -66,8 +66,12 @@ vector<string> Pipeline::printPipeline(){
 
         return pipelineInstructions;
 }
-void Pipeline::flushCDB(){
+void Pipeline::resetPipeline(int robID, int PC){
+        reservationStations.reset(robID);
+        rob.reset(robID);
         CDB.clear();
+        instruction_queue.clear();
+        this->PC = PC;
 }
 void Pipeline::instructionFetch(int cycle){
         if(PC < 716){
@@ -95,7 +99,7 @@ void Pipeline::decodeAndIssue(int cycle){
                         = new ROBEntry(true, nextInstruction, ROB_EXECUTE, nextInstruction->getDestination());
 
                 if(nextInstruction->isBreak() || nextInstruction->isNOP()){
-                        //TODO decode break and NOP
+                        //decode and NOP get no entry in RS only one entry in ROB.
                         instruction_queue.pop_front();
                         int robID = rob.push(robEntry);
                         rob.update(robID, 0, cycle, ROB_COMMIT);
@@ -106,8 +110,7 @@ void Pipeline::decodeAndIssue(int cycle){
                         reservationStations.addStation(reservationStationEntry);
                         int robID = rob.push(robEntry);
                         robToRS[robID]=reservationStationEntry;
-                        cout<<"ROBID "<<robID<<endl;
-                        reservationStationEntry->updateReorderID(robID);
+                        reservationStationEntry->updateROBId(robID);
                 }
         }else{
                 cout<<"Instruction Queue empty or rs full or rob full or no instruction for this cycle."<<endl;
@@ -117,7 +120,7 @@ void Pipeline::decodeAndIssue(int cycle){
 void Pipeline::execute(int cycle){
         cout<<"Execute Open:"<<cycle<<endl;
         reservationStations.updateStations(CDB);
-        flushCDB();
+        CDB.clear();
         vector<RSEntry*> toBeExecuted = reservationStations.checkPendingReservationStations(cycle);
         //execute instructions in toBeExecuted.
         for(int i=0;i<toBeExecuted.size();i++){
@@ -129,7 +132,6 @@ void Pipeline::execute(int cycle){
                         executedInstruction.push_back(make_pair(rs,cycle));
                 }
         }
-        cout<<"ExecutedInstruction:Size : "<<executedInstruction.size()<<endl;
         cout<<"Execute End:"<<cycle<<endl;
 }
 void Pipeline::writeResult(int cycle){
@@ -141,30 +143,25 @@ void Pipeline::writeResult(int cycle){
                 int instructionCycle = (*(executedInstructionIter)).second;
                 RSEntry* completedStation =  (*(executedInstructionIter)).first;
                 Instruction* instruction = completedStation->instruction;
-                int robID = completedStation->getReorderID();
-                cout<<"here Cycle: "<<cycle<<" Instruction Cycle : " <<instructionCycle<<endl; 
+                int robID = completedStation->getROBId();
                 if(instructionCycle == cycle){
                         if(instruction->isStore()){
                                 rob.update(robID, completedStation->Vj, instructionCycle, ROB_COMMIT,completedStation->A);
                         }else if(instruction->isJump() || instruction->isBranch()){
-                                //enter rob with same cycle no so as will be executed
+                                //enter rob with same cycle so as can be commited in next cycle
+                                //hack for skipping this stage.
                                 int result = completedStation->result;
-                                //computed value to ROB.
                                 rob.update(robID, result, instructionCycle, ROB_COMMIT);
                         }else{
                                 remainingInstructions.push_back(make_pair(completedStation,instructionCycle));
                         }
                 }else if(instructionCycle < cycle){
-                        cout<<"here too?? "<<instructionCycle<<endl;
-                        //TODO check
+                        //TODO check for other instructions.
                         int result = completedStation->result;
-                        //computed value to ROB.
-                        cout<<"Updating "<<robID<<endl;
+                        //computed value to ROB and write results to CDB.
                         rob.update(robID, result, cycle, ROB_COMMIT);
-                        //write results to CDB
                         CDB[robID] = result;
                 }else{
-                        cout<<"remaining "<<endl;
                         remainingInstructions.push_back(make_pair(completedStation,instructionCycle));
                 }
         }
@@ -175,11 +172,6 @@ void Pipeline::writeResult(int cycle){
 }
 bool Pipeline::commit(int cycle){
         cout<<"Commit Open "<<cycle<<endl;
-        if(!rob.isEmpty()){
-        cout<<"State : "<<(rob.peek()->getState() == ROB_COMMIT)<<endl;
-        cout<<"peek : "<<rob.peek()->getCycle()<<endl;
-        cout<<"instruction: "<<rob.peek()->getInstruction()->print(false)<<endl;
-        }
         if(!rob.isEmpty() 
                         && rob.peek()->getState() == ROB_COMMIT 
                         && rob.peek()->getCycle() < cycle){
@@ -195,7 +187,6 @@ bool Pipeline::commit(int cycle){
                         registerFile.setRegisterValue(destination, robHead->getValue());  
                 }
                 if(robToRS.find(rob.getHeadID()) != robToRS.end()){
-                        cout<<"erase"<<endl;
                         reservationStations.remove(robToRS[rob.getHeadID()]);
                         robToRS.erase(rob.getHeadID());
                 }
@@ -203,9 +194,5 @@ bool Pipeline::commit(int cycle){
                 if(registerStat.getRegisterReorderEntryID(destination) == rob.getHeadID())
                         registerStat.updateRegister(destination, false, -1);
         }
-        //Regular ALU instruction
-        //updates the register with result and remove the instruction from ROB and RS
-        //Store Commit
-        //main memory is updated instead of register updation
         cout<<"Commit Close "<<cycle<<endl;
 }

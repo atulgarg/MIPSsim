@@ -10,6 +10,7 @@ using namespace std;
 enum Prediction {PREDICTION_TAKEN, PREDICTION_NOT_TAKEN};
 class BTBEntry{
         public:
+        BTBEntry(int predictedAddress, Prediction prediction);
         int predictedAddress;
         Prediction prediction;
 };
