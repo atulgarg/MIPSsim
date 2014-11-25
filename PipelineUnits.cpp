@@ -12,7 +12,7 @@ RSEntry::RSEntry(Instruction* instruction, bool busy, int Vj, int Vk, int ROBId_
         this->numCycles = numCycles;
 }
 string RSEntry::print(){
-        return instruction->print();
+        return instruction->print(false);
 }
 bool RSEntry::isBusy(){
         return busy;
@@ -56,11 +56,9 @@ bool ReservationStations::isFull(){
 }
 
 bool ReservationStations::addStation(RSEntry* reservationStation){
-        cout<<"addStation"<<endl;
         if(this->isFull())
                 return false;
         reservationStations.push_back(reservationStation);
-        cout<<"Adding station"<<endl;
         return true;
 }
 vector<RSEntry*> ReservationStations::checkPendingReservationStations(int cycle){
@@ -70,7 +68,8 @@ vector<RSEntry*> ReservationStations::checkPendingReservationStations(int cycle)
                 if(reservationStation!=NULL
                                 && reservationStation->isBusy()
                                 && reservationStation->getCycle()< cycle
-                                && reservationStation->isReady()){
+                                && reservationStation->isReady()
+                                && reservationStation->getRemainingCycles()>0){
                 toBeExecutedInstructions.push_back(reservationStation);
                 }
         }
@@ -110,103 +109,6 @@ vector<string> ReservationStations::print(){
                 stations.push_back(reservationStations.at(i)->print());
         }
         return stations;
-}
-ROBEntry::ROBEntry(bool busy, Instruction* instruction, ROBState state, int destination){
-        this->busy = busy;
-        this->instruction = instruction;
-        this->state = state;
-        this->destination = destination;
-        this->value = -1;
-        this->cycle = -1;
-}
-int ROBEntry::getCycle(){
-        return this->cycle;
-}
-string ROBEntry::print(){
-        return this->instruction->print();
-}
-void ROBEntry::update(int value,int cycle,ROBState robState){
-        this->value = value;
-        this->cycle = cycle;
-        this->state = robState;
-}
-int ROBEntry::getValue(){
-        return this->value;
-}
-ROBState ROBEntry::getState(){
-        return this->state;
-}
-Instruction* ROBEntry::getInstruction(){
-        return this->instruction;
-}
-int ROBEntry::getDestination(){
-        return this->destination;
-}
-ROB::ROB(int max_entries){
-        rob = new ROBEntry*[max_entries];
-        this->max_entries = max_entries;
-        this->front = -1;
-        this->rear = -1;
-}
-vector<string> ROB::print(){
-        vector<string> robEntries;
-        for(int i=front;i<rear;i=(i+1)%max_entries)
-                robEntries.push_back(rob[i]->getInstruction()->print());
-        return robEntries;
-}
-bool ROB::isFull(){
-        return ((this->front==0 && rear == max_entries-1) || front == rear+1);
-}
-int ROB::push(ROBEntry* robEntry){
-        if(!isFull()){
-                if(front == rear == -1){
-                        //empty ROB
-                        front++;
-                        rear++;
-                }else if(rear==max_entries-1)
-                        rear =0;
-                else
-                        rear++;
-                rob[rear] = robEntry;
-        }else{
-                assert(true);
-                //TODO check
-                //cout<<"ROB full. Cannot add something is wrong should not reach here."<<endl;
-                exit(0);
-        }
-        return rear;
-}
-ROBEntry* ROB::peek(){
-        return rob[front];
-}
-ROBEntry* ROB::pop(){
-        if(!isEmpty()){
-                ROBEntry* top = rob[front];
-                front++;
-                return top;
-        }
-        return NULL;
-}
-bool ROB::isEmpty(){
-        //TODO need to check empty condition.
-        if(front == rear == -1)
-                return true;
-        return false;
-}
-void ROB::flushAfter(int robID){
-       //Set Null all the ID's after the given ID. 
-}
-int ROB::value(int robID){
-        return rob[robID]->getValue();
-}
-void ROB::update(int robID, int value, int cycle, ROBState robstate){
-        rob[robID]->update(value, cycle, robstate);
-}
-ROBState ROB::state(int robID){
-        return rob[robID]->getState();
-}
-int ROB::getHeadID(){
-        return front;
 }
 RegisterStatEntry::RegisterStatEntry(){
         this->busy = false;
@@ -248,4 +150,21 @@ int RegisterFile::getRegisterValue(int registerID){
 }
 void RegisterFile::setRegisterValue(int registerID, int value){
         this->registerValue[registerID] = value;
+}
+vector<string> RegisterFile::print(){
+        vector<string> registerValues;
+        int regIndex = 0;
+        for(int i=0;i<numberOfRegisters;i+=8){
+                stringstream ss;
+                if(i<16)
+                        ss<<"R0"<<i<<": ";
+                else
+                        ss<<"R"<<i<<": ";
+                do{
+                        ss<<getRegisterValue(regIndex)<<" ";
+                        regIndex++;
+                }while(regIndex%8 !=0);
+                registerValues.push_back(ss.str());
+        }
+        return registerValues;
 }

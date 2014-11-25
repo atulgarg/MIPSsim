@@ -27,7 +27,7 @@ void MIPSsim::print_memory(){
                 map<int, Abstract*>::iterator memory_iterator = memory->begin();
                 ofstream ofs(output_file,ofstream::out);
                 for(;memory_iterator!=memory->end();++memory_iterator){
-                        ofs<<memory_iterator->second->print()<<"\r\n";
+                        ofs<<memory_iterator->second->print(true)<<"\r\n";
                 }
                 ofs.close();
         }

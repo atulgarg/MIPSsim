@@ -4,8 +4,8 @@ CFLAGS=-c -g
 
 all: MIPSsim
 
-MIPSsim: MIPSsim.o Dissembler.o Pipeline.o PipelineUnits.o Simulator.o DecodeUtility.o BTB.o
-	$(CC) MIPSsim.o Dissembler.o Pipeline.o PipelineUnits.o Simulator.o DecodeUtility.o BTB.o -o MIPSsim
+MIPSsim: MIPSsim.o Dissembler.o Pipeline.o PipelineUnits.o Simulator.o DecodeUtility.o BTB.o ROB.o
+	$(CC) MIPSsim.o Dissembler.o Pipeline.o PipelineUnits.o Simulator.o DecodeUtility.o BTB.o ROB.o -o MIPSsim
 
 MIPSsim.o: MIPSsim.cpp
 	$(CC) $(CFLAGS) MIPSsim.cpp
@@ -21,6 +21,9 @@ Simulator.o: Simulator.cpp
 
 PipelineUnits.o: PipelineUnits.cpp
 	$(CC) $(CFLAGS) PipelineUnits.cpp
+
+ROB.o: ROB.cpp
+	$(CC) $(CFLAGS) ROB.cpp
 
 DecodeUtility.o: DecodeUtility.cpp
 	$(CC) $(CFLAGS) DecodeUtility.cpp

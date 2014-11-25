@@ -24,7 +24,7 @@ class Abstract{
                 this->memory = memory;
                 this->instructionType = DATATYPE;
         }
-        virtual string print(){
+        virtual string print(bool printBinary){
                 stringstream ss;
                 ss<<binary_instruction <<" "<<memory<<" "<<value;
                 return ss.str();
@@ -63,13 +63,17 @@ class Abstract{
         Instruction_Type getType(){
                 return instructionType;
         }
+        int getValue(){
+                return value;
+        }
 };
 class Instruction: public Abstract{
+        string decodedInstruction;
         public:
                 Instruction(string instruction, int memory, Instruction_Type instructionType)
                         : Abstract(instruction, memory, instructionType){
                         }
-                virtual string print(){
+                virtual string print(bool printBinary){
                         stringstream ss;
                         ss<<getInstruction().substr(0,6)<<" "
                                 << getInstruction().substr(6,5) << " "
@@ -102,7 +106,7 @@ class Instruction: public Abstract{
                         return false;
                 }
                 virtual int execute(int rs, int rt){
-                        cout<<"Should not come here ever"<<endl;
+                        cout<<"Execute not defined for "<<this->print(false)<<endl;
                 }
 };
 class R_Instruction : public Instruction{
@@ -151,9 +155,11 @@ class J_Instruction : public Instruction{
                 J_Instruction(string instruction, int memory): Instruction(instruction, memory, JTYPE){
                         this->target = convert_binary_string_to_int(instruction.substr(6,26))<<2;
                 }
-                virtual string print(){
+                virtual string print(bool printBinary){
                         stringstream ss;
-                        ss<<Instruction::print()<<" J #"<<target;
+                        if(printBinary)
+                                ss<<Instruction::print(printBinary)<<" ";
+                        ss<<"J #"<<target;
                         return ss.str();
                 }
                 bool isJump(){
@@ -168,8 +174,12 @@ class BREAK: public Instruction{
                 friend class ALUUnit;
                 BREAK(string instruction, int memory): Instruction(instruction, memory, BREAKTYPE){
                 }   
-                virtual string print(){
-                        return  Instruction::print() + " BREAK";
+                virtual string print(bool printBinary){
+                        stringstream ss;
+                        if(printBinary)
+                                ss<<Instruction::print(printBinary)<<" ";
+                        ss<<"BREAK";
+                        return  ss.str();
                 }
                 bool isBreak(){
                         return true;
@@ -180,9 +190,11 @@ class Sll: public R_Instruction{
         public:
                 Sll(string instruction, int memory): R_Instruction(instruction, memory){
                 }
-                virtual string print(){
+                virtual string print(bool printBinary){
                         stringstream ss;
-                        ss<< Instruction::print() << " SLL R" << rd << ", R" << rt << ", #" << sd;
+                        if(printBinary)
+                                ss<<Instruction::print(printBinary)<<" ";
+                        ss<<"SLL R" << rd << ", R" << rt << ", #" << sd;
                         return ss.str();
                 }
                 virtual int execute(int rs, int rt){
@@ -193,9 +205,11 @@ class Srl: public R_Instruction{
         public:
                 Srl(string instruction, int memory): R_Instruction(instruction, memory){
                 }
-                virtual string print(){
+                virtual string print(bool printBinary){
                         stringstream ss;
-                        ss<< Instruction::print() << " SRL R" << rd << ", R" << rt << ", #" << sd;
+                        if(printBinary)
+                                ss<<Instruction::print(printBinary)<<" ";
+                        ss<<"SRL R" << rd << ", R" << rt << ", #" << sd;
                         return ss.str();
                 }
                 virtual int execute(int rs, int rt){
@@ -206,9 +220,11 @@ class Sra: public R_Instruction{
         public:
                 Sra(string instruction, int memory): R_Instruction(instruction, memory){
                 }
-                virtual string print(){
+                virtual string print(bool printBinary){
                         stringstream ss;
-                        ss<< Instruction::print() << " SRA R" << rd << ", R" << rt << ", #" << sd;
+                        if(printBinary)
+                                ss<<Instruction::print(printBinary)<<" ";
+                        ss<<"SRA R" << rd << ", R" << rt << ", #" << sd;
                         return ss.str();
                 }
                 virtual int execute(int rs,int rt){
@@ -220,9 +236,11 @@ class Sub: public R_Instruction{
         public:
                 Sub(string instruction, int memory): R_Instruction(instruction,memory){
                 }
-                virtual string print(){
+                virtual string print(bool printBinary){
                         stringstream ss;
-                        ss<< Instruction::print() << " SUB R" << rd << ", R" << rs << ", " << rt;
+                        if(printBinary)
+                                ss<<Instruction::print(printBinary)<<" ";
+                        ss<<"SUB R" << rd << ", R" << rs << ", " << rt;
                         return ss.str();
                 }
                 virtual int execute(int rs, int rt){
@@ -234,9 +252,11 @@ class Sltu: public R_Instruction{
         public:
                 Sltu(string instruction, int memory): R_Instruction(instruction,memory){
                 }
-                virtual string print(){
+                virtual string print(bool printBinary){
                         stringstream ss;
-                        ss<< Instruction::print() << " SLTU R" << rd << ", R" << rs << ", R" << rt;
+                        if(printBinary)
+                                ss<<Instruction::print(printBinary)<<" ";
+                        ss<<"SLTU R" << rd << ", R" << rs << ", R" << rt;
                         return ss.str();
                 }
                 virtual int execute(int rs, int rt){
@@ -250,9 +270,11 @@ class Subu: public R_Instruction{
         public:
                 Subu(string instruction, int memory): R_Instruction(instruction, memory){
                 }
-                virtual string print(){
+                virtual string print(bool printBinary){
                         stringstream ss;
-                        ss<< Instruction::print() << " SUBU R" << rd << ", R" << rs << ", R" << rt;
+                        if(printBinary)
+                                ss<<Instruction::print(printBinary)<<" ";
+                        ss<<"SUBU R" << rd << ", R" << rs << ", R" << rt;
                         return ss.str();
                 }
                 virtual int execute(int rs, int rt){
@@ -263,9 +285,11 @@ class Add: public R_Instruction{
         public:
                 Add(string instruction, int memory): R_Instruction(instruction,memory){
                 }
-                virtual string print(){
+                virtual string print(bool printBinary){
                         stringstream ss;
-                        ss<< Instruction::print() << " ADD R" << rd << ", R" << rs << ", R" << rt;
+                        if(printBinary)
+                                ss<<Instruction::print(printBinary)<<" ";
+                        ss<<"ADD R" << rd << ", R" << rs << ", R" << rt;
                         return ss.str();
                 }
                 //TODO overflow??
@@ -277,9 +301,11 @@ class Addu: public R_Instruction{
         public:
                 Addu(string instruction, int memory): R_Instruction(instruction, memory){
                 }
-                virtual string print(){
+                virtual string print(bool printBinary){
                         stringstream ss;
-                        ss<< Instruction::print() << " ADDU R" << rd << ", R" << rs << ", R" << rt;
+                        if(printBinary)
+                                ss<<Instruction::print(printBinary)<<" ";
+                        ss<<"ADDU R" << rd << ", R" << rs << ", R" << rt;
                         return ss.str();
                 }
                 virtual int execute(int rs, int rt){
@@ -290,9 +316,11 @@ class And: public R_Instruction{
         public:
                 And(string instruction, int memory): R_Instruction(instruction, memory){
                 }
-                virtual string print(){
+                virtual string print(bool printBinary){
                         stringstream ss;
-                        ss<< Instruction::print() << " AND R" << rd << ", R" << rs << ", R" << rt;
+                        if(printBinary)
+                                ss<<Instruction::print(printBinary)<<" ";
+                        ss<<"AND R" << rd << ", R" << rs << ", R" << rt;
                         return ss.str();
                 }
                 virtual int execute(int rs, int rt){
@@ -303,9 +331,11 @@ class Or: public R_Instruction{
         public:
                 Or(string instruction, int memory): R_Instruction(instruction, memory){
                 }
-                virtual string print(){
+                virtual string print(bool printBinary){
                         stringstream ss;
-                        ss<< Instruction::print() << " OR R" << rd << ", R" << rs << ", R" << rt;
+                        if(printBinary)
+                                ss<<Instruction::print(printBinary)<<" ";
+                        ss<<"OR R" << rd << ", R" << rs << ", R" << rt;
                         return ss.str();
                 }
                 virtual int execute(int rs, int rt){
@@ -316,9 +346,11 @@ class Xor: public R_Instruction{
         public:
                 Xor(string instruction, int memory): R_Instruction(instruction, memory){
                 }
-                virtual string print(){
+                virtual string print(bool printBinary){
                         stringstream ss;
-                        ss<< Instruction::print() << " XOR R" << rd << ", R" << rs << ", R" << rt;
+                        if(printBinary)
+                                ss<<Instruction::print(printBinary)<<" ";
+                        ss<<"XOR R" << rd << ", R" << rs << ", R" << rt;
                         return ss.str();
                 }
                 virtual int execute(int rs, int rt){
@@ -329,9 +361,11 @@ class Nor: public R_Instruction{
         public:
                 Nor(string instruction, int memory): R_Instruction(instruction, memory){
                 }
-                virtual string print(){
+                virtual string print(bool printBinary){
                         stringstream ss;
-                        ss<< Instruction::print() << " NOR R" << rd << ", R" << rs << ", R" << rt;
+                        if(printBinary)
+                                ss<<Instruction::print(printBinary)<<" ";
+                        ss<<"NOR R" << rd << ", R" << rs << ", R" << rt;
                         return ss.str();
                 }
                 virtual int execute(int rs, int rt){
@@ -342,8 +376,12 @@ class Nop: public Instruction{
         public:
                 Nop(string instruction, int memory): Instruction(instruction, memory, NOPTYPE){
                 }
-                virtual string print(){
-                        return Instruction::print() + " NOP";
+                virtual string print(bool printBinary){
+                        stringstream ss;
+                        if(printBinary)
+                                ss<<Instruction::print(printBinary)<<" ";
+                        ss<<"NOP";
+                        return ss.str();
                 }
                 bool isNOP(){
                         return true;
@@ -353,9 +391,11 @@ class Slt: public R_Instruction{
         public:
                 Slt(string instruction, int memory): R_Instruction(instruction, memory){
                 }
-                virtual string print(){
+                virtual string print(bool printBinary){
                         stringstream ss;
-                        ss<< Instruction::print() << " SLT R" << rd << ", R" << rs << ", R" << rt;
+                        if(printBinary)
+                                ss<<Instruction::print(printBinary)<<" ";
+                        ss<<"SLT R" << rd << ", R" << rs << ", R" << rt;
                         return ss.str();
                 }
                 virtual int execute(int rs, int rt){
@@ -369,26 +409,39 @@ class Sw: public I_Instruction{
         public:
                 Sw(string instruction, int memory): I_Instruction(instruction, memory){
                 }
-                virtual string print(){
+                virtual string print(bool printBinary){
                         stringstream ss;
-                        ss<< Instruction::print() << " SW R" << rt << ", " << immediate << "(R" << rs << ")";
+                        if(printBinary)
+                                ss<<Instruction::print(printBinary)<<" ";
+                        ss<<"SW R" << rt << ", " << immediate << "(R" << rs << ")";
                         return ss.str();
                 }
                 bool isStore(){
                         return true;
+                }
+                virtual int getDestination(){
+                        return -1;
+                }
+                virtual int execute(int rs,int rt){
+                        return rs + immediate;
                 }
 };
 class Lw: public I_Instruction{
         public:
                 Lw(string instruction, int memory): I_Instruction(instruction, memory){
                 }
-                virtual string print(){
+                virtual string print(bool printBinary){
                         stringstream ss;
-                        ss<< Instruction::print() << " LW R" << rt << ", " << immediate << "(R" << rs << ")";
+                        if(printBinary)
+                                ss<<Instruction::print(printBinary)<<" ";
+                        ss<<"LW R" << rt << ", " << immediate << "(R" << rs << ")";
                         return ss.str();
                 }
                 bool isLoad(){
                         return true;
+                }
+                virtual int getDestination(){
+                        return -1;
                 }
                 
 };
@@ -399,9 +452,11 @@ class Beq: public I_Instruction{
                 virtual int getImmediate(){
                         return immediate<<2;
                 }
-                virtual string print(){
+                virtual string print(bool printBinary){
                         stringstream ss;
-                        ss<< Instruction::print() << " BEQ R" << rs << ", R" << rt << ", #" <<getImmediate();
+                        if(printBinary)
+                                ss<<Instruction::print(printBinary)<<" ";
+                        ss<<"BEQ R" << rs << ", R" << rt << ", #" <<getImmediate();
                         return ss.str();
                 }
                 virtual int execute(int rs,int rt){
@@ -422,9 +477,11 @@ class Bne: public I_Instruction{
                         return immediate<<2;
                 }
 
-                virtual string print(){
+                virtual string print(bool printBinary){
                         stringstream ss;
-                        ss<< Instruction::print() << " BNE R" << rs << ", R" << rt << ", #" << getImmediate();
+                        if(printBinary)
+                                ss<<Instruction::print(printBinary)<<" ";
+                        ss<<"BNE R" << rs << ", R" << rt << ", #" << getImmediate();
                         return ss.str();
                 }
                 bool isBranch(){
@@ -446,9 +503,11 @@ class Bgez: public I_Instruction{
                 virtual int getImmediate(){
                         return immediate<<2;
                 }
-                virtual string print(){
+                virtual string print(bool printBinary){
                         stringstream ss;
-                        ss<< Instruction::print() << " BGEZ R" << rs << ", #" << getImmediate();
+                        if(printBinary)
+                                ss<<Instruction::print(printBinary)<<" ";
+                        ss<<"BGEZ R" << rs << ", #" << getImmediate();
                         return ss.str();
                 }
                 bool isBranch(){
@@ -469,9 +528,11 @@ class Bgtz: public I_Instruction{
                 virtual int getImmediate(){
                         return immediate<<2;
                 }
-                virtual string print() {
+                virtual string print(bool printBinary) {
                         stringstream ss;
-                        ss<< Instruction::print() << " BGTZ R" << rs << ", #" << getImmediate();
+                        if(printBinary)
+                                ss<<Instruction::print(printBinary)<<" ";
+                        ss<<"BGTZ R" << rs << ", #" << getImmediate();
                         return ss.str();
                 }
                 bool isBranch(){
@@ -492,9 +553,11 @@ class Blez: public I_Instruction{
                 virtual int getImmediate(){
                         return immediate<<2;
                 }
-                virtual string print(){
+                virtual string print(bool printBinary){
                         stringstream ss;
-                        ss<< Instruction::print() << " BLEZ R" << rs << ", #" << getImmediate();
+                        if(printBinary)
+                                ss<<Instruction::print(printBinary)<<" ";
+                        ss<<"BLEZ R" << rs << ", #" << getImmediate();
                         return ss.str();
                 }
                 bool isBranch(){
@@ -515,9 +578,11 @@ class Bltz: public I_Instruction{
                 virtual int getImmediate(){
                         return immediate<<2;
                 }
-                virtual string print(){
+                virtual string print(bool printBinary){
                         stringstream ss;
-                        ss<< Instruction::print() << " BLTZ R" << rs << ", #" <<getImmediate();
+                        if(printBinary)
+                                ss<<Instruction::print(printBinary)<<" ";
+                        ss<<"BLTZ R" << rs << ", #" <<getImmediate();
                         return ss.str();
                 }
                 bool isBranch(){
@@ -535,9 +600,11 @@ class Addi: public I_Instruction{
         public:
                 Addi(string instruction, int memory): I_Instruction(instruction,memory){
                 }
-                virtual string print(){
+                virtual string print(bool printBinary){
                         stringstream ss;
-                        ss<< Instruction::print() << " ADDI R" << rt << ", R" << rs << ", #" << immediate;
+                        if(printBinary)
+                                ss<<Instruction::print(printBinary)<<" ";
+                        ss<<"ADDI R" << rt << ", R" << rs << ", #" << immediate;
                         return ss.str();
                 }
                 virtual int execute(int rs, int rt){
@@ -549,9 +616,11 @@ class Addiu: public I_Instruction{
         public:
                 Addiu(string instruction, int memory): I_Instruction(instruction,memory){
                 }
-                virtual string print(){
+                virtual string print(bool printBinary){
                         stringstream ss;
-                        ss<< Instruction::print() << " ADDIU R" << rt << ", R" << rs << ", #" << immediate;
+                        if(printBinary)
+                                ss<<Instruction::print(printBinary)<<" ";
+                        ss<<"ADDIU R" << rt << ", R" << rs << ", #" << immediate;
                         return ss.str();
                 }
                 virtual int execute(int rs, int rt){
@@ -562,9 +631,11 @@ class Slti: public I_Instruction{
         public:
                 Slti(string instruction, int memory): I_Instruction(instruction,memory){
                 }
-                virtual string print(){
+                virtual string print(bool printBinary){
                         stringstream ss;
-                        ss<< Instruction::print() << " SLTI R" << rt << ", R" << rs << ", #" << immediate;
+                        if(printBinary)
+                                ss<<Instruction::print(printBinary)<<" ";
+                        ss<<"SLTI R" << rt << ", R" << rs << ", #" << immediate;
                         return ss.str();
                 }
                 virtual int execute(int rs, int rt){

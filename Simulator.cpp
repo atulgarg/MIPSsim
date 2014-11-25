@@ -8,18 +8,23 @@ Simulator::Simulator(map<int,Abstract*>* memory_map,int program_counter,
 }
 vector<string> Simulator::simulate(){
         vector<string> output;
-        int cycle = 0;
+        int cycle = 1;
         bool nextFetch = true;
-        while(cycle < 2){
+        while(cycle < 7){
+                stringstream ss;
+                ss<<"Cycle <"<<cycle<<">:";
+                output.push_back(ss.str());
+
                 pipeline->instructionFetch(cycle);
                 pipeline->decodeAndIssue(cycle);
-
                 pipeline->execute(cycle);
                 pipeline->writeResult(cycle);
                 nextFetch = pipeline->commit(cycle);
-                cycle++;
-                output = pipeline->printPipeline();
+
+                vector<string> cycleOutput = pipeline->printPipeline();
+                output.insert(output.end(),cycleOutput.begin(),cycleOutput.end());
                 cout<<"Cycle ended"<<endl;
+                cycle++;
         }
         return output;
 }

@@ -23,17 +23,16 @@ RSEntry* DecodeUtility::decodeRTypeInstruction(R_Instruction* instruction, int c
         int Qj,Qk,Vj,Vk;
         decodeUtility(instruction->rs,Vj,Qj);
         decodeUtility(instruction->rt,Vk,Qk);
-        RSEntry* reservationStation = new RSEntry(instruction, true, Vj, Vk, Qj, Qk, 0/*not used*/, cycle,1);
+        RSEntry* reservationStation = new RSEntry(instruction, true, Vj, Vk, Qj, Qk, -1, cycle,1);
         return reservationStation; 
 }
 RSEntry* DecodeUtility::decodeITypeInstruction(I_Instruction* instruction, int cycle){
         int Qj,Qk,Vj,Vk;
         decodeUtility(instruction->rs, Vj, Qj);
-        int A = instruction->getImmediate();
         //Qk Vk not required.
         Qk = -1; Vk = 0;
         int numCycles = 1;
-        RSEntry* reservationStation = new RSEntry(instruction, true, Vj, Vk, Qj, Qk, A, cycle, numCycles);
+        RSEntry* reservationStation = new RSEntry(instruction, true, Vj, Vk, Qj, Qk, -1, cycle, numCycles);
         return reservationStation; 
 }
 RSEntry* DecodeUtility::decodeLoadStoreInstruction(I_Instruction* instruction, int cycle){

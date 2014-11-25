@@ -19,14 +19,13 @@ class InstructionQueueComparison{
 };
 class ALUUnit{
         public:
-        void execute(RSEntry* reservationStation);
+        void execute(RSEntry* reservationStation,ROB* rob,map<int,Abstract*>* memory_map);
 };
 
 class Pipeline{
         private:
                 map<int, Abstract*>* memory_map;
                 int PC;
-                int NPC; 
                 deque<pair<int,Instruction*> > instruction_queue;
                 BTB btb;
                 ReservationStations reservationStations;
@@ -36,6 +35,7 @@ class Pipeline{
                 RegisterFile registerFile;
                 vector<pair<RSEntry*, int> >executedInstruction;
                 map<Instruction*, int > predictedAddress;         //predicted
+                map<int, RSEntry*> robToRS;
                 DecodeUtility decodeUtility;
                 ALUUnit aluUnit;
         public:

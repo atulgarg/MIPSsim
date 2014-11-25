@@ -8,8 +8,6 @@
 #include<assert.h>
 #include "Instructions.h"
 #include "BTB.h"
-//Constants used for reorder Buffer 
-enum ROBState { ROB_COMMIT, ROB_WRITE_RESULT, ROB_EXECUTE };
 
 class RSEntry{
         friend class ALUUnit;
@@ -46,42 +44,6 @@ class ReservationStations{
         void remove(RSEntry* reservationStation);
         std::vector<std::string> print();
 };
-class ROBEntry{
-        bool busy;
-        Instruction* instruction;
-        ROBState state;
-        int destination;    //differentiate between memory and register??
-        int value;
-        int cycle;          //for specifying cycle in which the result was put.
-        public:
-        ROBEntry(bool busy, Instruction* instruction, ROBState state, int destination);
-        void update(int value, int cycle, ROBState state);
-        int getValue();
-        ROBState getState();
-        Instruction* getInstruction();
-        int getDestination();
-        int getCycle();
-        std::string print();
-};
-class ROB{
-        ROBEntry** rob;
-        int front;
-        int rear;
-        int max_entries;
-        public:
-        ROB(int max_entries);
-        int push(ROBEntry* robEntry);
-        ROBEntry* peek();
-        ROBEntry* pop();
-        bool isEmpty();
-        bool isFull();
-        void flushAfter(int robID);
-        int value(int robID);
-        ROBState state(int robID);
-        void update(int robID, int value, int cycle, ROBState state);
-        int getHeadID();
-        std::vector<std::string> print();
-};
 class RegisterStatEntry{
         bool busy;
         int reorderEntryID;                 //id for reorder entry
@@ -100,12 +62,6 @@ class RegisterStat{
         bool registerBusy(int registerID);
         int getRegisterReorderEntryID(int registerID);
 };
-class BTBEntry{
-        int instructionAddress;
-        int branchTargetAddress;
-        Prediction prediction;
-        //LRU replacement policy;
-};
 class RegisterFile{
         int* registerValue;
         int numberOfRegisters; 
@@ -113,5 +69,6 @@ class RegisterFile{
         RegisterFile(int numberOfRegisters);
         void setRegisterValue(int registerID, int value);
         int getRegisterValue(int registerID);
+        vector<string> print();
 };
 #endif
