@@ -199,7 +199,7 @@ I_Instruction* Dissembler::parse_I_Type_Instruction(string binary_instruction, i
  * @method parse_opcode will parse the instruction in sub-type and also
  * set is_data to true once break is seen. 
  */
-Instruction* Dissembler::parse_opcode(string binary_instruction, bool &is_data, int memory_address){
+Instruction* Dissembler::parse_opcode(string binary_instruction, bool &is_data, int &memory_address){
         string opcode = binary_instruction.substr(0,6);
         if(opcode.compare(J_TYPE_FORMAT)==0){
                 //check if supported type instruction and create one.
@@ -208,7 +208,9 @@ Instruction* Dissembler::parse_opcode(string binary_instruction, bool &is_data, 
                 //determine R or Break;
                 if(binary_instruction.compare(BREAK_I) == 0){
                         is_data = true;
-                        return new BREAK(binary_instruction, memory_address);
+                        int breakMemoryAddress = memory_address;
+                        memory_address =716;
+                        return new BREAK(binary_instruction, breakMemoryAddress);
                 }
                 else{
                         //check if supported R_Instruction if yes then create one and return.

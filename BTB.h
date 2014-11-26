@@ -5,12 +5,15 @@
 #include<string>
 #include<vector>
 #include<list>
+#include<assert.h>
+#include "dbg.h"
 using namespace std;
 //Constants used for BTB.
 enum Prediction {PREDICTION_TAKEN, PREDICTION_NOT_TAKEN};
 class BTBEntry{
         public:
-        BTBEntry(int predictedAddress, Prediction prediction);
+        BTBEntry(int instructionAddress,int predictedAddress, Prediction prediction);
+        int instructionAddress;
         int predictedAddress;
         Prediction prediction;
 };
@@ -21,7 +24,8 @@ class BTB{
         public:
         BTB(int max_entries);
         int predict(int instructionAddress);
-        void update(int instructionAddress, int targetAddress);
+        void update(int instructionAddress, int targetAddress,Prediction prediction);
         vector<string> print();
+        int getNumberOfEntries();
 };
 #endif

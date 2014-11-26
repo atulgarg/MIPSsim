@@ -7,6 +7,10 @@ ROBEntry::ROBEntry(bool busy, Instruction* instruction, ROBState state, int dest
         this->value = -1;
         this->cycle = -1;
 }
+ROBEntry::ROBEntry(bool busy, Instruction* instruction, ROBState state)
+        :ROBEntry(busy,instruction,state,-1){
+}
+
 int ROBEntry::getCycle(){
         return this->cycle;
 }
@@ -37,102 +41,131 @@ int ROBEntry::getDestination(){
         return this->destination;
 }
 ROB::ROB(int max_entries){
-        rob = new ROBEntry*[max_entries];
+        count = 0;
         this->max_entries = max_entries;
-        this->front = -1;
-        this->rear = -1;
 }
 vector<string> ROB::print(){
         vector<string> robEntries;
         if(!isEmpty()){
-                debug("Front ::%d Rear :: %d",front,rear);
-                for(int i=front;i<=rear;i++){
-                        robEntries.push_back(rob[i]->getInstruction()->print(false));
+                assert(rob.size()== robMap.size());
+                map<int,ROBEntry*>::iterator iter = robMap.begin();
+                for(;iter!=robMap.end();++iter){
+                        robEntries.push_back(iter->second->getInstruction()->print(false));
                 }
         }
         return robEntries;
 }
 bool ROB::isFull(){
-        return (front == ((rear+1)%max_entries));
+        cout<<"ROB list size : "<<rob.size()<<endl;
+        cout<<"ROB map size : "<<robMap.size()<<endl;
+        assert(rob.size()== robMap.size());
+        return (rob.size() == max_entries); 
 }
 int ROB::push(ROBEntry* robEntry){
-        if(!isFull()){
-                if(front == -1){
-                        //empty ROB
-                        front++;
-                }
-                rear = (rear + 1)%max_entries;
-                rob[rear] = robEntry;
-        }else{
-                assert(true);
-                log_err("ROB full. Cannot add something is wrong should not reach here.");
-                exit(0);
-        }
-        return rear;
+        assert(rob.size()== robMap.size());
+        rob.push_front(robEntry);
+        robMap[count++] = robEntry;
+        assert(rob.size()== robMap.size());
+        return (count-1);
 }
 ROBEntry* ROB::peek(){
-        return rob[front];
+        return rob.back();
 }
 ROBEntry* ROB::pop(){
         if(!isEmpty()){
-                ROBEntry* top = rob[front];
-                if(front == rear){
-                        front = rear = -1;
-                }else
-                        front = (front +1)% max_entries;
+                ROBEntry* top = rob.back();
+                map<int,ROBEntry*>::iterator iter = robMap.begin();
+                for(;iter!=robMap.end();++iter){
+                        if(iter->second == top)
+                                break;
+                }
+                rob.pop_back();
+                robMap.erase(iter);
                 return top;
         }
         return NULL;
 }
 bool ROB::isEmpty(){
-        if(front == rear  && (rear == -1))
-                return true;
-        return false;
+        return (rob.size() == 0);
 }
 void ROB::reset(int robID){
-        //TODO
-       //Set Null all the ID's after the given ID.
-       rear = robID;
+        //CHECK
+        map<int, ROBEntry*> newMap;
+        list<ROBEntry*> newList;
+        ROBEntry* entry = robMap.find(robID)->second;
+        map<int,ROBEntry*>::iterator iter = robMap.begin();
+        for(;iter!=robMap.end();++iter){
+                if(iter->first < robID){
+                        newMap.insert(*iter);
+                        newList.push_front(iter->second);
+                }
+        }
+        rob = newList;
+        robMap = newMap;
 }
 int ROB::value(int robID){
-        return rob[robID]->getValue();
+        ROBEntry* entry = robMap.find(robID)->second;
+        return entry->getValue();
 }
 void ROB::update(int robID, int value, int cycle, ROBState robstate){
-        rob[robID]->update(value, cycle, robstate);
+        ROBEntry* entry = robMap.find(robID)->second;
+        entry->update(value, cycle, robstate);
 }
 void ROB::update(int robID, int value, int cycle, ROBState robstate, int destination){
-        rob[robID]->update(value, cycle, robstate,destination);
+        ROBEntry* entry = robMap.find(robID)->second;
+        entry->update(value, cycle, robstate, destination);
 }
 
 ROBState ROB::state(int robID){
-        return rob[robID]->getState();
+        ROBEntry* entry = robMap.find(robID)->second;
+        return (entry)->getState();
 }
 int ROB::getHeadID(){
-        return front;
+        ROBEntry* top = rob.back();
+        map<int,ROBEntry*>::iterator iter = robMap.begin();
+        for(;iter!=robMap.end();++iter){
+                if(iter->second == top)
+                        break;
+        }
+        return iter->first;
 }
 bool ROB::allAddressComputedBefore(int robID){
         if(!isEmpty()){
-                for(int i=(robID+1)%max_entries;i<rear;i=(i+1)%max_entries){
-                        Instruction* instruction = rob[i]->getInstruction();
-                        if((instruction->isLoad() || instruction->isStore()) 
-                                        && rob[i]->destination == ((Lw*)instruction)->getImmediate())
-                                return false;
+                map<int,ROBEntry*>::iterator iter = robMap.begin();
+                for(;iter!=robMap.end();++iter){
+                        if(iter->first < robID){
+                                ROBEntry* robEntry = iter->second;
+                                Instruction* instruction = robEntry->getInstruction();
+                                if((instruction->isLoad() || instruction->isStore()) 
+                                                && robEntry->destination == -1)
+                                        return false;
+                        }
+
                 }
         }
         return true;
 }
 bool ROB::noPendingStore(int robID){
         if(!isEmpty()){
-                for(int i=(robID+1)%max_entries;i<rear;i=(i+1)%max_entries){
-                        Instruction* instruction = rob[i]->getInstruction();
-                        if((instruction->isLoad() || instruction->isStore()) 
-                                        && rob[i]->destination == rob[robID]->destination
-                                        && rob[i]->state != ROB_COMMIT)
-                                return false;
+                ROBEntry* entry = robMap.find(robID)->second;
+                map<int,ROBEntry*>::iterator iter = robMap.begin();
+                for(;iter!=robMap.end();++iter){
+                        ROBEntry* robEntry = iter->second;
+                        if(iter->first < robID){
+                                Instruction* instruction = robEntry->getInstruction();
+                                if((instruction->isLoad() || instruction->isStore()) 
+                                                && robEntry->destination == entry->destination
+                                                && robEntry->state != ROB_COMMIT)
+                                        return false;
+                        }
                 }
         }
         return true;
 }
+int ROB::size(){
+        return rob.size();
+}
 void ROB::setDestination(int destination, int robID){
-        this->rob[robID]->destination = destination;
+        ROBEntry* entry = robMap.find(robID)->second;
+        (entry)->destination = destination;
 }

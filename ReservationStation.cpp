@@ -10,6 +10,21 @@ RSEntry::RSEntry(Instruction* instruction, bool busy, int Vj, int Vk, int ROBId_
         this->cycle = cycle;
         this->numCycles = numCycles;
 }
+RSEntry::RSEntry(Instruction* instruction, bool busy, int Vj, int Vk, int ROBId_Qj, int ROBId_Qk, int cycle, int numCycles)
+        :RSEntry(instruction, busy, Vj, Vk, ROBId_Qj, ROBId_Qk, -1, cycle, numCycles){
+}
+RSEntry::RSEntry(Instruction* instruction, bool busy, int Vj, int ROBId_Qj, int A, int cycle, int numCycles)
+        :RSEntry(instruction, busy, Vj, 0, ROBId_Qj, -1, A, cycle, numCycles){
+}
+
+RSEntry::RSEntry(Instruction* instruction, bool busy, int Vj, int ROBId_Qj, int cycle, int numCycles)
+        :RSEntry(instruction, busy, Vj, 0, ROBId_Qj, -1, -1, cycle, numCycles){
+}
+
+RSEntry::RSEntry(Instruction* instruction, bool busy, int cycle, int numCycles):
+        RSEntry(instruction, busy, 0, 0, -1, -1, -1, cycle, numCycles){
+}
+
 string RSEntry::print(){
         return instruction->print(false);
 }
@@ -34,12 +49,15 @@ bool RSEntry::isReady(){
         else
                 return false;
 }
+bool RSEntry::isStoreReady(){
+        if(ROBId_Qj == -1 && instruction->isStore())
+                return true;
+        return false;
+}
 int RSEntry::getRemainingCycles(){
         return this->numCycles;
 }
 int RSEntry::execute(){
-        //TODO
-        this->numCycles--;
         return this->instruction->execute(Vj,Vk);
 }
 ReservationStations::ReservationStations(int max_stations){
@@ -64,24 +82,32 @@ vector<RSEntry*> ReservationStations::checkPendingReservationStations(int cycle)
                 if(reservationStation!=NULL
                                 && reservationStation->isBusy()
                                 && reservationStation->getCycle()< cycle
-                                && reservationStation->isReady()
-                                && reservationStation->getRemainingCycles()>0){
-                toBeExecutedInstructions.push_back(reservationStation);
+                                && (reservationStation->isReady() || reservationStation->isStoreReady())
+                                && reservationStation->getRemainingCycles() > 0){
+                        toBeExecutedInstructions.push_back(reservationStation);
                 }
         }
         return toBeExecutedInstructions;
 }
 void ReservationStations::updateStations(map<int,int> CDB){
+        cout<<"Print CDB :"<<endl;
+        for(map<int,int>::iterator iter = CDB.begin();iter!=CDB.end();++iter){
+                cout<<"ROBID : "<<iter->first<<" Value :"<<iter->second<<endl;
+        }
         for(int i=0;i<reservationStations.size();i++){
                 RSEntry* reservationStation = reservationStations.at(i);
-                if(reservationStation != NULL && reservationStation->isBusy() && !reservationStation->isReady()){
+                if(reservationStation != NULL 
+                                && reservationStation->isBusy() 
+                                && !reservationStation->isReady()){
                         if(reservationStation->ROBId_Qj != -1            //reservationStation not ready
                                         && CDB.find(reservationStation->ROBId_Qj)!=CDB.end()){       //and value is in CDB
+                                cout<<"Updating for if store ready i "<<i<<" "<<reservationStation->isStoreReady();
                                 reservationStation->Vj = CDB.find(reservationStation->ROBId_Qj)->second;
                                 reservationStation->ROBId_Qj = -1;
                         }
                         if(reservationStation->ROBId_Qk != -1
                                         && CDB.find(reservationStation->ROBId_Qk)!=CDB.end()){
+                                cout<<i<<" Updating Vk = "<<CDB.find(reservationStation->ROBId_Qk)->second<<" for rs is store ready "<<reservationStation->isStoreReady()<<endl;
                                 reservationStation->Vk = CDB.find(reservationStation->ROBId_Qk)->second;
                                 reservationStation->ROBId_Qk = -1;
                         }
@@ -105,8 +131,15 @@ vector<string> ReservationStations::print(){
         }
         return stations;
 }
-void ReservationStations::reset(int robID){
-        //TODO
-        cout<<"need to implement reset for rs"<<endl;
+void ReservationStations::reset(RSEntry* reservationStation){
+        //CHECK
+        int index = 0;
+        for(;index<reservationStations.size();index++){
+                if(reservationStations.at(index) == reservationStation)
+                        break;
+        }
+        assert(index<reservationStations.size());
+        reservationStations.erase(reservationStations.begin(),reservationStations.begin()+ index);
+        currently_used-=(index+1); 
 }
 

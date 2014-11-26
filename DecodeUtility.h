@@ -14,9 +14,13 @@ class DecodeUtility{
         RSEntry* decodeITypeInstruction(I_Instruction* instruction, int cycle);
         RSEntry* decodeJTypeInstruction(J_Instruction* instruction, int cycle);
         RSEntry* decodeBreakTypeInstruction(BREAK* instruction, int cycle);
-        RSEntry* decodeLoadStoreInstruction(I_Instruction* instruction, int cycle);
+        RSEntry* decodeBranchInstruction(I_Instruction* instruction, int cycle);
+        RSEntry* decodeLoadInstruction(Lw* instruction, int cycle);
+        RSEntry* decodeStoreInstruction(Sw* instruction, int cycle);
+        void markRegBusy(int regID, int robID);
         public:
         DecodeUtility(RegisterStat* registerStat, RegisterFile* registerFile, ROB* rob);
         RSEntry* decodeInstruction(Instruction* instruction,int cycle);
+        void decodeNOPAndBreak(Instruction* instruction, int cycle);
 };
 #endif

@@ -78,7 +78,7 @@ class Dissembler{
                  */
                 I_Instruction* parse_I_Type_Instruction(string binary_instruction, int memory);
 
-                Instruction* parse_opcode(string binary_instruction, bool &is_data, int memory);
+                Instruction* parse_opcode(string binary_instruction, bool &is_data, int &memory);
         public:
                 Dissembler();
                 //Method to read binary input file

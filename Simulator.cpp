@@ -10,18 +10,19 @@ vector<string> Simulator::simulate(){
         vector<string> output;
         int cycle = 1;
         bool nextFetch = true;
-        while(cycle < 10){
+        while(nextFetch){
                 stringstream ss;
                 ss<<"Cycle <"<<cycle<<">:";
                 output.push_back(ss.str());
 
                 pipeline->instructionFetch(cycle);
                 pipeline->decodeAndIssue(cycle);
+
+                vector<string> cycleOutput = pipeline->printPipeline();
                 pipeline->execute(cycle);
                 pipeline->writeResult(cycle);
                 nextFetch = pipeline->commit(cycle);
 
-                vector<string> cycleOutput = pipeline->printPipeline();
                 output.insert(output.end(),cycleOutput.begin(),cycleOutput.end());
                 cout<<"Cycle ended"<<endl;
                 cycle++;

@@ -5,6 +5,8 @@
 #include<iostream>
 #include<sstream>
 #include<climits>
+#include "BTB.h"
+#include "dbg.h"
 using namespace std;
 enum Instruction_Type {ITYPE, RTYPE , JTYPE, DATATYPE, BREAKTYPE, NOPTYPE};
 class Abstract{
@@ -72,6 +74,7 @@ class Instruction: public Abstract{
         public:
                 Instruction(string instruction, int memory, Instruction_Type instructionType)
                         : Abstract(instruction, memory, instructionType){
+                                isBranchTaken = PREDICTION_NOT_TAKEN;
                         }
                 virtual string print(bool printBinary){
                         stringstream ss;
@@ -84,15 +87,13 @@ class Instruction: public Abstract{
                                 << getMemory();
                         return ss.str();
                 }
-                virtual int getDestination(){
-                        //TODO virtual
-                }
                 virtual bool isStore(){
                         return false;
                 }
                 virtual bool isLoad(){
                         return false;
                 }
+                Prediction isBranchTaken;
                 virtual bool isBranch(){
                         return false;
                 }
@@ -125,9 +126,6 @@ class R_Instruction : public Instruction{
                         this->sd = convert_binary_string_to_int(instruction.substr(21,5));
                         this->function = convert_binary_string_to_int(instruction.substr(26,6));
                 }
-                int getDestination(){
-                        return rd;
-                }
 };
 class I_Instruction : public Instruction{
         public:
@@ -142,9 +140,6 @@ class I_Instruction : public Instruction{
                 }
                 virtual int getImmediate(){
                         return immediate;
-                }
-                int getDestination(){
-                        return rt;
                 }
 };
 class J_Instruction : public Instruction{
@@ -166,7 +161,11 @@ class J_Instruction : public Instruction{
                         return true;
                 }
                 virtual int execute(){
-                        
+                        //TODO memory address to jump
+                        isBranchTaken = PREDICTION_TAKEN;
+                        cout<<"Jump Instruction : "<<target<<endl;
+                        log_err("In J_instruction execute %d",target);
+                        return target;       
                 }
 };
 class BREAK: public Instruction{
@@ -419,9 +418,6 @@ class Sw: public I_Instruction{
                 bool isStore(){
                         return true;
                 }
-                virtual int getDestination(){
-                        return -1;
-                }
                 virtual int execute(int rs,int rt){
                         return rs + immediate;
                 }
@@ -440,6 +436,9 @@ class Lw: public I_Instruction{
                 bool isLoad(){
                         return true;
                 }
+                virtual int execute(int rs, int rt){
+                        return immediate + rs;
+                }
 };
 class Beq: public I_Instruction{
         public:
@@ -456,8 +455,10 @@ class Beq: public I_Instruction{
                         return ss.str();
                 }
                 virtual int execute(int rs,int rt){
-                        if(rs == rt)
+                        if(rs == rt){
+                                isBranchTaken = PREDICTION_TAKEN;
                                 return getMemory() + 4 + getImmediate();
+                        }
                         else
                                 return getMemory() + 4;
                 }
@@ -484,9 +485,10 @@ class Bne: public I_Instruction{
                         return true;
                 }
                 virtual int execute(int rs, int rt){
-                        if(rs != rt)
+                        if(rs != rt){
+                                isBranchTaken = PREDICTION_TAKEN;
                                 return getMemory() + 4 + getImmediate();
-                        else
+                        }else
                                 return getMemory() + 4;
 
                 }
@@ -510,9 +512,10 @@ class Bgez: public I_Instruction{
                         return true;
                 }
                 virtual int execute(int rs, int rt){
-                        if(rs >= 0)
+                        if(rs >= 0){
+                                isBranchTaken = PREDICTION_TAKEN;
                                 return getMemory() + 4 + getImmediate();
-                        else
+                        }else
                                 return getMemory() + 4;
                 }
 
@@ -535,9 +538,10 @@ class Bgtz: public I_Instruction{
                         return true;
                 }
                 virtual int execute(int rs, int rt){
-                        if(rs > 0)
+                        if(rs > 0){
+                                isBranchTaken = PREDICTION_TAKEN;
                                 return getMemory() + 4 + getImmediate();
-                        else
+                        }else
                                 return getMemory() + 4;
                 }
 
@@ -560,9 +564,10 @@ class Blez: public I_Instruction{
                         return true;
                 }
                 virtual int execute(int rs, int rt){
-                        if(rs <= 0)
+                        if(rs <= 0){
+                                isBranchTaken = PREDICTION_TAKEN;
                                 return getMemory() + 4 + getImmediate();
-                        else
+                        }else
                                 return getMemory() + 4;
                 }
 
@@ -585,9 +590,10 @@ class Bltz: public I_Instruction{
                         return true;
                 }
                 virtual int execute(int rs, int rt){
-                        if(rs < 0)
+                        if(rs < 0){
+                                isBranchTaken = PREDICTION_TAKEN;
                                 return getMemory() + 4 + getImmediate();
-                        else
+                        }else
                                 return getMemory() + 4;
                 }
 
@@ -605,7 +611,6 @@ class Addi: public I_Instruction{
                 }
                 virtual int execute(int rs, int rt){
                         //TODO overflow
-                        cout<<"Addi execute hua"<<endl;
                         return rs + getImmediate();
                 }
 };

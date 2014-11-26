@@ -1,6 +1,6 @@
 CC=g++
 
-CFLAGS=-c -g
+CFLAGS=-c -g -std=c++11
 
 all: MIPSsim
 
@@ -9,6 +9,9 @@ MIPSsim: MIPSsim.o Dissembler.o Pipeline.o PipelineUnits.o Simulator.o DecodeUti
 
 ROBTest: ROBTest.o ROB.o
 	$(CC) ROBTest.o ROB.o -o ROBTest
+
+BTBTest: BTBTest.o BTB.o
+	$(CC) BTBTest.o BTB.o -o BTBTest
 
 MIPSsim.o: MIPSsim.cpp
 	$(CC) $(CFLAGS) MIPSsim.cpp
@@ -39,5 +42,9 @@ ROBTest.o: ROBTest.cpp
 
 ReservationStation.o: ReservationStation.cpp
 	$(CC) $(CFLAGS) ReservationStation.cpp
+
+BTBTest.o: BTBTest.cpp
+	$(CC) $(CFLAGS) BTBTest.cpp
+
 clean:
-	rm -rf *.o MIPSsim ROBTest output.txt
+	rm -rf *.o MIPSsim ROBTest BTBTest output.txt

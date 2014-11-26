@@ -17,14 +17,19 @@ class RSEntry{
         int result, robID;
         public:
         int ROBId_Qj, ROBId_Qk, Vj, Vk;
-        RSEntry(Instruction* instruction,bool busy,int Vj,int Vk,int ROBId_Qj,int ROBId_Qk,int A,int cycle, int numCycles);
+        RSEntry(Instruction* instruction, bool busy, int Vj, int Vk, int ROBId_Qj,int ROBId_Qk,int A,int cycle, int numCycles);
+        RSEntry(Instruction* instruction, bool busy, int Vj, int Vk, int ROBId_Qj, int ROBId_Qk, int cycle,int numCycles);
+        RSEntry(Instruction* instruction, bool busy, int Vj, int ROBID_Qj, int cycle, int numCycles);
+        RSEntry(Instruction* instruction, bool busy, int Vj, int ROBId_Qj, int A, int cycle, int numCycles);
+        RSEntry(Instruction* instruction, bool busy, int cycle, int numCycles);
         bool isBusy();
         void setBusy(bool busy);
         void updateROBId(int robID);
         int getROBId();
         int getCycle();
         bool isReady();
-        int execute();
+        bool isStoreReady();
+                int execute();
         int getRemainingCycles();
         std::string print();
 };
@@ -34,7 +39,7 @@ class ReservationStations{
         int max_stations;
         public:
         ReservationStations(int max_stations);
-        void reset(int robID);
+        void reset(RSEntry* rs);
         bool isFull();
         bool addStation(RSEntry* reservationStation);
         void updateStations(std::map<int,int> CDB);

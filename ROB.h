@@ -3,6 +3,7 @@
 #include "Instructions.h"
 #include "dbg.h"
 #include<cstdlib>
+#include<list>
 #include<assert.h>
 #include<vector>
 using namespace std;
@@ -19,6 +20,7 @@ class ROBEntry{
         int cycle;          //for specifying cycle in which the result was put.
         public:
         ROBEntry(bool busy, Instruction* instruction, ROBState state, int destination);
+        ROBEntry(bool busy, Instruction* instruction, ROBState state);
         void update(int value, int cycle, ROBState state);
         void update(int value, int cycle, ROBState state, int destination);
         int getValue();
@@ -29,10 +31,11 @@ class ROBEntry{
         std::string print();
 };
 class ROB{
-        ROBEntry** rob;
-        int front;
-        int rear;
+        list<ROBEntry*> rob;
+        map<int, ROBEntry*> robMap; 
+        int count;
         int max_entries;
+        list<ROBEntry*>::iterator find(int robID);
         public:
         ROB(int max_entries);
         int push(ROBEntry* robEntry);
@@ -49,6 +52,7 @@ class ROB{
         bool allAddressComputedBefore(int robID);
         bool noPendingStore(int robID);
         int getHeadID();
+        int size();
         std::vector<std::string> print();
 };
 #endif

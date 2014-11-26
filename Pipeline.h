@@ -10,6 +10,7 @@
 #include<vector>
 #include<map>
 #include<string>
+#include<utility>
 /**
  * InstructionQueueComparison for returning instruction with smallest cycle.
  */
@@ -21,7 +22,7 @@ class InstructionQueueComparison{
 };
 class ALUUnit{
         public:
-        void execute(RSEntry* reservationStation,ROB* rob,map<int,Abstract*>* memory_map);
+        pair<int,int>* execute(RSEntry* reservationStation,ROB* rob,map<int,Abstract*>* memory_map);
 };
 
 class Pipeline{
