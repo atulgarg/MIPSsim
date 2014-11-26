@@ -95,13 +95,14 @@ void ROB::reset(int robID){
         ROBEntry* entry = robMap.find(robID)->second;
         map<int,ROBEntry*>::iterator iter = robMap.begin();
         for(;iter!=robMap.end();++iter){
-                if(iter->first < robID){
+                if(iter->first <= robID){
                         newMap.insert(*iter);
                         newList.push_front(iter->second);
                 }
         }
         rob = newList;
         robMap = newMap;
+        assert(rob.size() == robMap.size());
 }
 int ROB::value(int robID){
         ROBEntry* entry = robMap.find(robID)->second;

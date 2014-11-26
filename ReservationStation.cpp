@@ -132,14 +132,29 @@ vector<string> ReservationStations::print(){
         return stations;
 }
 void ReservationStations::reset(RSEntry* reservationStation){
-        //CHECK
         int index = 0;
-        for(;index<reservationStations.size();index++){
-                if(reservationStations.at(index) == reservationStation)
+        vector<RSEntry*> tempReservationStations;
+        vector<RSEntry*>::iterator rsIter = reservationStations.begin();
+        cout<<"All stations "<<endl;
+        for(;rsIter!=reservationStations.end();++rsIter){
+                        cout<<"Stations: "<<(*rsIter)->print()<<endl;
+        }
+        
+        rsIter = reservationStations.begin();
+        for(;rsIter!=reservationStations.end();++rsIter){
+                if((*rsIter) == reservationStation)
                         break;
         }
-        assert(index<reservationStations.size());
-        reservationStations.erase(reservationStations.begin(),reservationStations.begin()+ index);
-        currently_used-=(index+1); 
+        //this assertion is needed as all the stations 
+        //assert(index<reservationStations.size());
+        reservationStations.erase(++rsIter,reservationStations.end());
+        
+        rsIter = reservationStations.begin();
+        cout<<"Saved Stations "<<endl;
+        for(;rsIter!=reservationStations.end();++rsIter){
+                        cout<<"Saving stations for "<<(*rsIter)->print()<<endl;
+        }
+
+        currently_used = reservationStations.size(); 
 }
 

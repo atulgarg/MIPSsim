@@ -10,7 +10,7 @@ vector<string> Simulator::simulate(){
         vector<string> output;
         int cycle = 1;
         bool nextFetch = true;
-        while(nextFetch){
+        while(cycle < 45){
                 stringstream ss;
                 ss<<"Cycle <"<<cycle<<">:";
                 output.push_back(ss.str());

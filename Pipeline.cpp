@@ -105,11 +105,13 @@ void Pipeline::resetPipeline(int robID, int PC){
         map<int,RSEntry*>::iterator iter = robToRS.begin();
         map<int,RSEntry*> robToRSTempMap;
         for(;iter!=robToRS.end();++iter){
-               if(iter->first < robID)
+               if(iter->first <= robID)
                       robToRSTempMap[iter->first] = iter->second; 
         }
-
-        //need to flush mapping between rs and rob
+        
+        cout<<"Reset Pipeline "<<robToRS[robID]->print()<<endl;
+        if(robToRS[robID]!=NULL)
+                cout<<"There is reservation station for robID"<<endl;
         reservationStations.reset(robToRS[robID]);
         rob.reset(robID);
        
@@ -119,7 +121,7 @@ void Pipeline::resetPipeline(int robID, int PC){
         map<int,int>::iterator cdbIter = CDB.begin();
         map<int, int> tempCDB;
         for(;cdbIter!=CDB.end();++cdbIter){
-                if(cdbIter->first < robID)
+                if(cdbIter->first <= robID)
                         tempCDB[cdbIter->first] = cdbIter->second;
         }
         CDB.swap(tempCDB);
@@ -149,7 +151,8 @@ void Pipeline::decodeAndIssue(int cycle){
         if(!instruction_queue.empty() && !rob.isFull()
                         && instruction_queue.front().first < cycle) {
                 Instruction* nextInstruction = instruction_queue.front().second;
-
+                cout<<nextInstruction->print(false)<<endl;
+                cout<<"Instruction Queue Size:"<<instruction_queue.size()<<endl;
                 if(nextInstruction->isBreak() || nextInstruction->isNOP()){
                         //decode and NOP get no entry in RS only one entry in ROB.
                         decodeUtility.decodeNOPAndBreak(nextInstruction, cycle);
@@ -159,6 +162,8 @@ void Pipeline::decodeAndIssue(int cycle){
                         RSEntry* reservationStationEntry 
                                 = decodeUtility.decodeInstruction(nextInstruction, cycle);
                         reservationStations.addStation(reservationStationEntry);
+                        if(reservationStationEntry->instruction->isJump())
+                                cout<<"Decode Jump Instruction ROB ID:"<<reservationStationEntry->getROBId()<<endl;
                         robToRS[reservationStationEntry->getROBId()]=reservationStationEntry;
                 }else{
                         debug("Stall");
@@ -186,6 +191,7 @@ void Pipeline::execute(int cycle){
                                 int evaluatedAddress = rs->result;
                                 if(predictedAddress[rs->instruction] != evaluatedAddress){
                                         debug("branch misprediction");
+                                        resetPipeline(rs->robID,evaluatedAddress);
                                         btb.update(rs->instruction->getMemory(),evaluatedAddress,rs->instruction->isBranchTaken);
                                 }
                         }
@@ -248,7 +254,8 @@ bool Pipeline::commit(int cycle){
                         RSEntry* rs = robToRS[rob.getHeadID()];
                         if(predictedAddress[rs->instruction] != rs->result){
                                 //misprediction
-                                resetPipeline(rob.getHeadID(), rs->result);
+                                cout<<"Committing Misprediction"<<endl;
+                                //resetPipeline(rob.getHeadID(), rs->result);
                         } 
                         predictedAddress.erase(rs->instruction);
                 }else if(robHead->getInstruction()->isStore()){
