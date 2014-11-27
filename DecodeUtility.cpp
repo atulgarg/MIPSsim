@@ -68,7 +68,7 @@ RSEntry* DecodeUtility::decodeITypeInstruction(I_Instruction* instruction, int c
         int numCycles = 1;
 
         RSEntry* reservationStation = new RSEntry(instruction, true, Vj, Qj, cycle, numCycles);
-        cout<<"Decoding Vj = "<<Vj<<" and Qj = "<<Qj<<endl;
+        debug("Decoding Vj = %d and Qj = %d", Vj, Qj);
         reservationStation->updateROBId(robID);
         return reservationStation; 
 }
@@ -83,7 +83,7 @@ RSEntry* DecodeUtility::decodeLoadInstruction(Lw* instruction, int cycle){
         int numCycles = 2;
         
         int A = instruction->getImmediate();
-        cout<<"Load Instruction decode and A value :"<<A<<endl;
+        debug("Load Instruction decode and A value : %d", A);
         RSEntry* reservationStation = new RSEntry(instruction, true, Vj, Qj, A, cycle, numCycles);
         reservationStation->updateROBId(robID);
 
@@ -94,7 +94,7 @@ RSEntry* DecodeUtility::decodeStoreInstruction(Sw* instruction, int cycle){
         decodeUtility(instruction->rs, Vj, Qj);
         decodeUtility(instruction->rt, Vk, Qk);
         
-        cout<<"Vj = "<<Vj<<"Qj :"<<Qj<<endl;
+        debug("Vj = %d Qj : %d",Vj,Qj);
         ROBEntry* robEntry                                                                                                     
                 = new ROBEntry(true, instruction, ROB_EXECUTE);
         int robID = rob->push(robEntry);
@@ -134,7 +134,7 @@ RSEntry* DecodeUtility::decodeInstruction(Instruction* instruction,int cycle){
                 return decodeJTypeInstruction((J_Instruction*)instruction, cycle);
 }
 void DecodeUtility::decodeNOPAndBreak(Instruction* instruction, int cycle){
-        cout<<"Decoding NOP Or Break"<<endl;
+        debug("Decoding NOP Or Break");
         ROBEntry* robEntry 
                 = new ROBEntry(true, instruction, ROB_EXECUTE);
         int robID = rob->push(robEntry);

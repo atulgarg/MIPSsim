@@ -5,6 +5,7 @@
 #include "PipelineUnits.h"
 #include "ReservationStation.h"
 #include "ROB.h"
+#include "dbg.h"
 class DecodeUtility{
         RegisterStat* registerStat;
         RegisterFile* registerFile;

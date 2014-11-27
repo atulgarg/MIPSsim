@@ -26,7 +26,7 @@ RSEntry::RSEntry(Instruction* instruction, bool busy, int cycle, int numCycles):
 }
 
 string RSEntry::print(){
-        return instruction->print(false);
+        return "[" + instruction->print(false) + "]";
 }
 bool RSEntry::isBusy(){
         return busy;
@@ -105,10 +105,6 @@ void ReservationStations::updateStations(ROB* rob){
         }
 }
 void ReservationStations::updateStations(map<int,int> CDB){
-        cout<<"Print CDB :"<<endl;
-        for(map<int,int>::iterator iter = CDB.begin();iter!=CDB.end();++iter){
-                cout<<"ROBID : "<<iter->first<<" Value :"<<iter->second<<endl;
-        }
         for(int i=0;i<reservationStations.size();i++){
                 RSEntry* reservationStation = reservationStations.at(i);
                 if(reservationStation != NULL 
@@ -116,13 +112,11 @@ void ReservationStations::updateStations(map<int,int> CDB){
                                 && !reservationStation->isReady()){
                         if(reservationStation->ROBId_Qj != -1            //reservationStation not ready
                                         && CDB.find(reservationStation->ROBId_Qj)!=CDB.end()){       //and value is in CDB
-                                cout<<"Updating for if store ready i "<<i<<" "<<reservationStation->isStoreReady();
                                 reservationStation->Vj = CDB.find(reservationStation->ROBId_Qj)->second;
                                 reservationStation->ROBId_Qj = -1;
                         }
                         if(reservationStation->ROBId_Qk != -1
                                         && CDB.find(reservationStation->ROBId_Qk)!=CDB.end()){
-                                cout<<i<<" Updating Vk = "<<CDB.find(reservationStation->ROBId_Qk)->second<<" for rs is store ready "<<reservationStation->isStoreReady()<<endl;
                                 reservationStation->Vk = CDB.find(reservationStation->ROBId_Qk)->second;
                                 reservationStation->ROBId_Qk = -1;
                         }
@@ -150,10 +144,6 @@ void ReservationStations::reset(RSEntry* reservationStation){
         int index = 0;
         vector<RSEntry*> tempReservationStations;
         vector<RSEntry*>::iterator rsIter = reservationStations.begin();
-        cout<<"All stations "<<endl;
-        for(;rsIter!=reservationStations.end();++rsIter){
-                        cout<<"Stations: "<<(*rsIter)->print()<<endl;
-        }
         
         rsIter = reservationStations.begin();
         for(;rsIter!=reservationStations.end();++rsIter){
@@ -164,12 +154,6 @@ void ReservationStations::reset(RSEntry* reservationStation){
         //assert(index<reservationStations.size());
         reservationStations.erase(++rsIter,reservationStations.end());
         
-        rsIter = reservationStations.begin();
-        cout<<"Saved Stations "<<endl;
-        for(;rsIter!=reservationStations.end();++rsIter){
-                        cout<<"Saving stations for "<<(*rsIter)->print()<<endl;
-        }
-
         currently_used = reservationStations.size(); 
 }
 

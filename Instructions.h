@@ -163,8 +163,7 @@ class J_Instruction : public Instruction{
                 virtual int execute(){
                         //TODO memory address to jump
                         isBranchTaken = PREDICTION_TAKEN;
-                        cout<<"Jump Instruction : "<<target<<endl;
-                        log_err("In J_instruction execute %d",target);
+                        debug("In J_instruction execute %d",target);
                         return target;       
                 }
 };
@@ -172,7 +171,6 @@ class BREAK: public Instruction{
         public:
                 friend class ALUUnit;
                 BREAK(string instruction, int memory): Instruction(instruction, memory, BREAKTYPE){
-                        cout<<"Memroy "<<memory<<endl;
                 }   
                 virtual string print(bool printBinary){
                         stringstream ss;

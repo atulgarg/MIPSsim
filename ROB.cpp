@@ -15,7 +15,7 @@ int ROBEntry::getCycle(){
         return this->cycle;
 }
 string ROBEntry::print(){
-        return this->instruction->print(false);
+        return "[" +this->instruction->print(false) + "]";
 }
 void ROBEntry::update(int value,int cycle,ROBState robState){
         this->value = value;
@@ -50,14 +50,12 @@ vector<string> ROB::print(){
                 assert(rob.size()== robMap.size());
                 map<int,ROBEntry*>::iterator iter = robMap.begin();
                 for(;iter!=robMap.end();++iter){
-                        robEntries.push_back(iter->second->getInstruction()->print(false));
+                        robEntries.push_back("["+iter->second->getInstruction()->print(false)+ "]");
                 }
         }
         return robEntries;
 }
 bool ROB::isFull(){
-        cout<<"ROB list size : "<<rob.size()<<endl;
-        cout<<"ROB map size : "<<robMap.size()<<endl;
         assert(rob.size()== robMap.size());
         return (rob.size() == max_entries); 
 }

@@ -11,7 +11,7 @@ vector<string> Simulator::simulate(){
         int cycle = 1;
         bool nextFetch = true;
         
-        while(cycle < 47){
+        while(nextFetch){
                 stringstream ss;
                 ss<<"Cycle <"<<cycle<<">:";
                 output.push_back(ss.str());
@@ -25,10 +25,8 @@ vector<string> Simulator::simulate(){
                 nextFetch = pipeline->commit(cycle);
 
                 output.insert(output.end(),cycleOutput.begin(),cycleOutput.end());
-                cout<<"Cycle ended"<<endl;
                 cycle++;
         }
-        cout<<memory_map->find(664)->second->print(false)<<endl;
         return output;
 }
 vector<string> Simulator::simulate(int m, int n){

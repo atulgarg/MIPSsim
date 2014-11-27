@@ -32,7 +32,7 @@ pair<int,int>* ALUUnit::execute(RSEntry* reservationStation, ROB* rob,map<int,Ab
                 }
         }else if(instruction->isJump()){
                 reservationStation->result = ((J_Instruction*)instruction)->execute();
-                log_err("Jump result %d", reservationStation->result);
+                debug("Jump result %d", reservationStation->result);
                 reservationStation->numCycles = reservationStation->numCycles -1;
         }else{
                 reservationStation->result = instruction->execute(reservationStation->Vj,reservationStation->Vk);
@@ -60,7 +60,7 @@ vector<string> Pipeline::printPipeline(){
         pipelineInstructions.push_back("IQ:");
         deque<pair<int,Instruction*> >::iterator instructionQueueIter = instruction_queue.begin();
         for(;instructionQueueIter!=instruction_queue.end();++instructionQueueIter){
-                pipelineInstructions.push_back(instructionQueueIter->second->print(false));
+                pipelineInstructions.push_back("[" + instructionQueueIter->second->print(false)+ "]");
         }
 
         debug("Printing RS ");
@@ -109,9 +109,6 @@ void Pipeline::resetPipeline(int robID, int PC){
                       robToRSTempMap[iter->first] = iter->second; 
         }
         
-        cout<<"Reset Pipeline "<<robToRS[robID]->print()<<endl;
-        if(robToRS[robID]!=NULL)
-                cout<<"There is reservation station for robID"<<endl;
         reservationStations.reset(robToRS[robID]);
         rob.reset(robID);
        
@@ -141,7 +138,7 @@ void Pipeline::instructionFetch(int cycle){
                                 PC = PC + 4;
                         instruction_queue.push_back(make_pair(cycle,(Instruction*)nextInstruction));
                 }else{
-                        log_warn("No more instructions in memory");
+                        debug("No more instructions in memory");
                 }
         }
         debug("Instruction Fetch close: %d",cycle);
@@ -151,8 +148,6 @@ void Pipeline::decodeAndIssue(int cycle){
         if(!instruction_queue.empty() && !rob.isFull()
                         && instruction_queue.front().first < cycle) {
                 Instruction* nextInstruction = instruction_queue.front().second;
-                cout<<nextInstruction->print(false)<<endl;
-                cout<<"Instruction Queue Size:"<<instruction_queue.size()<<endl;
                 if(nextInstruction->isBreak() || nextInstruction->isNOP()){
                         //decode and NOP get no entry in RS only one entry in ROB.
                         decodeUtility.decodeNOPAndBreak(nextInstruction, cycle);
@@ -162,14 +157,12 @@ void Pipeline::decodeAndIssue(int cycle){
                         RSEntry* reservationStationEntry 
                                 = decodeUtility.decodeInstruction(nextInstruction, cycle);
                         reservationStations.addStation(reservationStationEntry);
-                        if(reservationStationEntry->instruction->isJump())
-                                cout<<"Decode Jump Instruction ROB ID:"<<reservationStationEntry->getROBId()<<endl;
                         robToRS[reservationStationEntry->getROBId()]=reservationStationEntry;
                 }else{
                         debug("Stall");
                 }
         }else{
-                log_warn("Instruction Queue empty or rs full or rob full or no instruction for this cycle.");
+                debug("Instruction Queue empty or rs full or rob full or no instruction for this cycle.");
         }
         debug("Decode and Issue Close ");
 }
@@ -187,7 +180,6 @@ void Pipeline::execute(int cycle){
                 if(robCommit != NULL)
                         robCommits.push_back(robCommit);
                 if(rs->getRemainingCycles() == 0){
-                        cout<<"Executed  "<<rs->instruction->print(false)<<" in cycle "<<cycle<<endl;
                         //execute then check if complete to move it to next stage.
                         if(rs->instruction->isBranch() || rs->instruction->isJump()){
                                 int evaluatedAddress = rs->result;
@@ -207,11 +199,7 @@ void Pipeline::execute(int cycle){
 void Pipeline::writeResult(int cycle){
         debug("WriteResult Open %d", cycle);
         debug("ROB Size %d",rob.size());
-        cout<<"Rob Entries "<<endl;
 
-        vector<string> prin = rob.print();
-        for(int i=0;i<prin.size();i++)
-                cout<<"Entry "<<prin.at(i)<<endl;
         //write result to ROB and waiting RS through CDB
         vector<pair<RSEntry*,int> >::iterator executedInstructionIter = executedInstruction.begin();
         vector<pair<RSEntry*,int> > remainingInstructions;
@@ -230,7 +218,6 @@ void Pipeline::writeResult(int cycle){
                 }else if(instruction->isJump() || instruction->isBranch()){
                         //enter rob with same cycle so as can be commited in next cycle
                         //hack for skipping this stage.
-                        cout<<"completed Station result "<<completedStation->result<<" instruction "<<instruction->print(false)<<endl;
                         int result = completedStation->result;
                         rob.update(robID, result, instructionCycle, ROB_COMMIT);
                 }else if(instructionCycle < cycle){
@@ -258,13 +245,11 @@ bool Pipeline::commit(int cycle){
                         && rob.peek()->getCycle() < cycle){
                 ROBEntry* robHead = rob.peek();
                 int destination = robHead->getDestination();
-                cout<<"Committing "<<robHead->getInstruction()->print(false)<<" Cycle "<<cycle<<endl;
                 if(robHead->getInstruction()->isBranch() || robHead->getInstruction()->isJump()){
-                        cout<<"Branch in commit"<<endl;
                         RSEntry* rs = robToRS[rob.getHeadID()];
                         if(predictedAddress[rs->instruction] != rs->result){
-                                //misprediction
-                                cout<<"Committing Misprediction"<<endl;
+                                //TODO misprediction
+                                ;
                                 //resetPipeline(rob.getHeadID(), rs->result);
                         } 
                         predictedAddress.erase(rs->instruction);
@@ -276,7 +261,6 @@ bool Pipeline::commit(int cycle){
                         debug("Updating register value for R%d whose %d and head is %d value %d",
                                         destination, registerStat.getRegisterReorderEntryID(destination), 
                                         rob.getHeadID(), robHead->getValue());
-                        cout<<rob.peek()->getInstruction()->print(false)<<endl;
                         registerFile.setRegisterValue(destination, robHead->getValue());  
                 }
                 if(registerStat.getRegisterReorderEntryID(destination) == rob.getHeadID()){
