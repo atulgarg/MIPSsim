@@ -10,7 +10,7 @@ vector<string> Simulator::simulate(){
         vector<string> output;
         int cycle = 1;
         bool nextFetch = true;
-        
+
         while(nextFetch){
                 stringstream ss;
                 ss<<"Cycle <"<<cycle<<">:";
@@ -27,6 +27,13 @@ vector<string> Simulator::simulate(){
                 output.insert(output.end(),cycleOutput.begin(),cycleOutput.end());
                 cycle++;
         }
+        //This is only since the last three stages were not executed
+        stringstream cycleHeading;
+        cycleHeading<<"Final Cycle <"<<--cycle<<">:";
+        output.push_back(cycleHeading.str());
+        vector<string> cycleOutput = pipeline->printPipeline();
+        output.insert(output.end(),cycleOutput.begin(),cycleOutput.end());
+        
         return output;
 }
 vector<string> Simulator::simulate(int m, int n){

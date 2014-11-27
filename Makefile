@@ -19,4 +19,4 @@ $(LIB)/%.o: $(SRC)/%.cpp
 	$(CC) $(CFLAGS) $< -o $@
 
 clean:
-	rm -rf $(LIB)/*.o MIPSsim ROBTest BTBTest output.txt
+	rm -rf $(LIB)/*.o MIPSsim ROBTest BTBTest
