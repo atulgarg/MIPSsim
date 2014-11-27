@@ -1,20 +1,22 @@
 CC=g++
 
 CFLAGS=-c -g -std=c++11
-
+LIB=lib
+SRC=src
 all: MIPSsim
 
-MIPSsim: MIPSsim.o Dissembler.o Pipeline.o PipelineUnits.o Simulator.o DecodeUtility.o BTB.o ROB.o ReservationStation.o
-	$(CC) MIPSsim.o Dissembler.o Pipeline.o PipelineUnits.o Simulator.o DecodeUtility.o BTB.o ROB.o ReservationStation.o -o MIPSsim
+MIPSsim: $(LIB)/MIPSsim.o $(LIB)/Dissembler.o $(LIB)/Pipeline.o $(LIB)/PipelineUnits.o $(LIB)/Simulator.o $(LIB)/DecodeUtility.o $(LIB)/BTB.o $(LIB)/ROB.o $(LIB)/ReservationStation.o
+	$(CC) $(LIB)/MIPSsim.o $(LIB)/Dissembler.o $(LIB)/Pipeline.o $(LIB)/PipelineUnits.o $(LIB)/Simulator.o $(LIB)/DecodeUtility.o $(LIB)/BTB.o $(LIB)/ROB.o $(LIB)/ReservationStation.o -o MIPSsim
 
-ROBTest: ROBTest.o ROB.o
-	$(CC) ROBTest.o ROB.o -o ROBTest
+ROBTest: $(LIB)/ROBTest.o $(LIB)/ROB.o
+	$(CC) $(LIB)/ROBTest.o $(LIB)/ROB.o -o ROBTest
 
-BTBTest: BTBTest.o BTB.o
-	$(CC) BTBTest.o BTB.o -o BTBTest
+BTBTest: $(LIB)/BTBTest.o $(LIB)/BTB.o
+	$(CC) $(LIB)/BTBTest.o $(LIB)/BTB.o -o BTBTest
 
-%.o: %.cpp
-	$(CC) $(CFLAGS) $^
+$(LIB)/%.o: $(SRC)/%.cpp
+	@mkdir -p lib
+	$(CC) $(CFLAGS) $< -o $@
 
 clean:
-	rm -rf *.o MIPSsim ROBTest BTBTest output.txt
+	rm -rf $(LIB)/*.o MIPSsim ROBTest BTBTest output.txt
