@@ -13,38 +13,8 @@ ROBTest: ROBTest.o ROB.o
 BTBTest: BTBTest.o BTB.o
 	$(CC) BTBTest.o BTB.o -o BTBTest
 
-MIPSsim.o: MIPSsim.cpp
-	$(CC) $(CFLAGS) MIPSsim.cpp
-
-Dissembler.o: Dissembler.cpp
-	$(CC) $(CFLAGS) Dissembler.cpp
-
-Pipeline.o: Pipeline.cpp
-	$(CC) $(CFLAGS) Pipeline.cpp
-
-Simulator.o: Simulator.cpp
-	$(CC) $(CFLAGS) Simulator.cpp
-
-PipelineUnits.o: PipelineUnits.cpp
-	$(CC) $(CFLAGS) PipelineUnits.cpp
-
-ROB.o: ROB.cpp
-	$(CC) $(CFLAGS) ROB.cpp
-
-DecodeUtility.o: DecodeUtility.cpp
-	$(CC) $(CFLAGS) DecodeUtility.cpp
-
-BTB.o: BTB.cpp
-	$(CC) $(CFLAGS) BTB.cpp
-
-ROBTest.o: ROBTest.cpp
-	$(CC) $(CFLAGS) ROBTest.cpp
-
-ReservationStation.o: ReservationStation.cpp
-	$(CC) $(CFLAGS) ReservationStation.cpp
-
-BTBTest.o: BTBTest.cpp
-	$(CC) $(CFLAGS) BTBTest.cpp
+%.o: %.cpp
+	$(CC) $(CFLAGS) $^
 
 clean:
 	rm -rf *.o MIPSsim ROBTest BTBTest output.txt
