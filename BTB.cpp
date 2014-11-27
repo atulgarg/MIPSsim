@@ -34,13 +34,14 @@ void BTB::update(int instructionAddress, int targetAddress, Prediction predictio
 vector<string> BTB::print(){
         vector<string> output;
         list<BTBEntry>::iterator listIter = btbList.begin();
-        int entry = 1;
-        for(;listIter!=btbList.end();++listIter,++entry){
+        int entry = btbList.size();
+        for(;listIter!=btbList.end();++listIter,--entry){
                 BTBEntry btbEntry = *(listIter);
                 stringstream ss;
                 ss<<"[Entry "<<entry<<"]:<"<<btbEntry.instructionAddress<<","<<btbEntry.predictedAddress<<","<<btbEntry.prediction<<">";
                 output.push_back(ss.str());
-        } 
+        }
+        reverse(output.begin(),output.end()); 
         return output;
 }
 int BTB::getNumberOfEntries(){

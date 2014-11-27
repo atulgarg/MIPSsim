@@ -168,7 +168,6 @@ void Pipeline::decodeAndIssue(int cycle){
 }
 void Pipeline::execute(int cycle){
         debug("Execute Open: %d", cycle);
-        //reservationStations.updateStations(CDB);
         reservationStations.updateStations(&rob);
         CDB.clear();
         vector<RSEntry*> toBeExecuted = reservationStations.checkPendingReservationStations(cycle);
@@ -186,8 +185,9 @@ void Pipeline::execute(int cycle){
                                 if(predictedAddress[rs->instruction] != evaluatedAddress){
                                         debug("branch misprediction");
                                         resetPipeline(rs->robID,evaluatedAddress);
-                                        btb.update(rs->instruction->getMemory(),evaluatedAddress,rs->instruction->isBranchTaken);
                                 }
+
+                                btb.update(rs->instruction->getMemory(),evaluatedAddress,rs->instruction->isBranchTaken);
                         }
                         executedInstruction.push_back(make_pair(rs,cycle));
                 }

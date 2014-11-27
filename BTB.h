@@ -6,10 +6,11 @@
 #include<vector>
 #include<list>
 #include<assert.h>
+#include<algorithm>
 #include "dbg.h"
 using namespace std;
 //Constants used for BTB.
-enum Prediction {PREDICTION_TAKEN, PREDICTION_NOT_TAKEN};
+enum Prediction {PREDICTION_TAKEN=1, PREDICTION_NOT_TAKEN=0};
 class BTBEntry{
         public:
         BTBEntry(int instructionAddress,int predictedAddress, Prediction prediction);
