@@ -131,7 +131,7 @@ void Pipeline::resetPipeline(int robID, int PC){
 }
 void Pipeline::instructionFetch(int cycle){
         if(PC < 716){
-                debug("Instruction Fetch open: %d", cycle);
+                debug("Instruction Fetch open: %d PC : %d", cycle, PC);
                 Instruction* nextInstruction = (Instruction*)memory_map->find(PC)->second;
                 if(nextInstruction!=NULL){
                         if(nextInstruction->isBranch() || nextInstruction->isJump()){
@@ -175,7 +175,8 @@ void Pipeline::decodeAndIssue(int cycle){
 }
 void Pipeline::execute(int cycle){
         debug("Execute Open: %d", cycle);
-        reservationStations.updateStations(CDB);
+        //reservationStations.updateStations(CDB);
+        reservationStations.updateStations(&rob);
         CDB.clear();
         vector<RSEntry*> toBeExecuted = reservationStations.checkPendingReservationStations(cycle);
         vector<pair<int,int>* > robCommits;
@@ -186,6 +187,7 @@ void Pipeline::execute(int cycle){
                 if(robCommit != NULL)
                         robCommits.push_back(robCommit);
                 if(rs->getRemainingCycles() == 0){
+                        cout<<"Executed  "<<rs->instruction->print(false)<<" in cycle "<<cycle<<endl;
                         //execute then check if complete to move it to next stage.
                         if(rs->instruction->isBranch() || rs->instruction->isJump()){
                                 int evaluatedAddress = rs->result;
@@ -205,6 +207,11 @@ void Pipeline::execute(int cycle){
 void Pipeline::writeResult(int cycle){
         debug("WriteResult Open %d", cycle);
         debug("ROB Size %d",rob.size());
+        cout<<"Rob Entries "<<endl;
+
+        vector<string> prin = rob.print();
+        for(int i=0;i<prin.size();i++)
+                cout<<"Entry "<<prin.at(i)<<endl;
         //write result to ROB and waiting RS through CDB
         vector<pair<RSEntry*,int> >::iterator executedInstructionIter = executedInstruction.begin();
         vector<pair<RSEntry*,int> > remainingInstructions;
@@ -213,6 +220,8 @@ void Pipeline::writeResult(int cycle){
                 RSEntry* completedStation =  (*(executedInstructionIter)).first;
                 Instruction* instruction = completedStation->instruction;
                 int robID = completedStation->getROBId();
+                if(robToRS.find(robID)==robToRS.end())
+                        continue;
                 if(instruction->isStore()){
                         //store Vj at A.
                         debug("Store instruction %s value to save %d, at %d",
@@ -221,7 +230,7 @@ void Pipeline::writeResult(int cycle){
                 }else if(instruction->isJump() || instruction->isBranch()){
                         //enter rob with same cycle so as can be commited in next cycle
                         //hack for skipping this stage.
-                        cout<<"completed Station result "<<completedStation->result<<endl;
+                        cout<<"completed Station result "<<completedStation->result<<" instruction "<<instruction->print(false)<<endl;
                         int result = completedStation->result;
                         rob.update(robID, result, instructionCycle, ROB_COMMIT);
                 }else if(instructionCycle < cycle){
@@ -249,6 +258,7 @@ bool Pipeline::commit(int cycle){
                         && rob.peek()->getCycle() < cycle){
                 ROBEntry* robHead = rob.peek();
                 int destination = robHead->getDestination();
+                cout<<"Committing "<<robHead->getInstruction()->print(false)<<" Cycle "<<cycle<<endl;
                 if(robHead->getInstruction()->isBranch() || robHead->getInstruction()->isJump()){
                         cout<<"Branch in commit"<<endl;
                         RSEntry* rs = robToRS[rob.getHeadID()];

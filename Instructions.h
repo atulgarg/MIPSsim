@@ -172,6 +172,7 @@ class BREAK: public Instruction{
         public:
                 friend class ALUUnit;
                 BREAK(string instruction, int memory): Instruction(instruction, memory, BREAKTYPE){
+                        cout<<"Memroy "<<memory<<endl;
                 }   
                 virtual string print(bool printBinary){
                         stringstream ss;

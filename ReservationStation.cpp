@@ -89,6 +89,21 @@ vector<RSEntry*> ReservationStations::checkPendingReservationStations(int cycle)
         }
         return toBeExecutedInstructions;
 }
+void ReservationStations::updateStations(ROB* rob){
+        for(int i=0;i<reservationStations.size();i++){
+                RSEntry* rs = reservationStations.at(i);
+                if(rs->ROBId_Qj != -1 
+                                && rob->state(rs->ROBId_Qj) == ROB_COMMIT){
+                        rs->Vj = rob->value(rs->ROBId_Qj);
+                        rs->ROBId_Qj = -1;
+                }
+                if(rs->ROBId_Qk != -1
+                                && rob->state(rs->ROBId_Qk) == ROB_COMMIT){
+                        rs->Vk = rob->value(rs->ROBId_Qk);
+                        rs->ROBId_Qk = -1;
+                }
+        }
+}
 void ReservationStations::updateStations(map<int,int> CDB){
         cout<<"Print CDB :"<<endl;
         for(map<int,int>::iterator iter = CDB.begin();iter!=CDB.end();++iter){

@@ -199,28 +199,30 @@ I_Instruction* Dissembler::parse_I_Type_Instruction(string binary_instruction, i
  * @method parse_opcode will parse the instruction in sub-type and also
  * set is_data to true once break is seen. 
  */
-Instruction* Dissembler::parse_opcode(string binary_instruction, bool &is_data, int &memory_address){
+pair<int,Instruction*> Dissembler::parse_opcode(string binary_instruction, bool &is_data, int &memory_address){
+        Instruction* instruction;
+        int instructionMemory = memory_address;
         string opcode = binary_instruction.substr(0,6);
         if(opcode.compare(J_TYPE_FORMAT)==0){
                 //check if supported type instruction and create one.
-                return new J_Instruction(binary_instruction, memory_address);;
+                instruction = new J_Instruction(binary_instruction, instructionMemory);
         }else if(opcode.compare(R_OR_BREAK) == 0){
                 //determine R or Break;
                 if(binary_instruction.compare(BREAK_I) == 0){
+                        instruction = new BREAK(binary_instruction, instructionMemory);
                         is_data = true;
-                        int breakMemoryAddress = memory_address;
-                        memory_address =716;
-                        return new BREAK(binary_instruction, breakMemoryAddress);
+                        memory_address =712;
                 }
                 else{
                         //check if supported R_Instruction if yes then create one and return.
                         if(isNOP(binary_instruction)){
-                                return new Nop(binary_instruction, memory_address);
+                                instruction = new Nop(binary_instruction, instructionMemory);
                         }else
-                                return parse_R_Type_Instruction(binary_instruction, memory_address);
+                                instruction =  parse_R_Type_Instruction(binary_instruction, instructionMemory);
                 }
         }else
-                return parse_I_Type_Instruction(binary_instruction, memory_address); 
+                instruction =  parse_I_Type_Instruction(binary_instruction, memory_address);
+       return pair<int, Instruction*>(instructionMemory,instruction);
 }
 /*
  * @method read_file will read the instructions from input file specified
@@ -236,7 +238,7 @@ void Dissembler::read_file(char* input_file, map<int,Abstract*>* memory){
         {
                 string binary_instruction  = in_binary(instruction_read);
                 if(!is_data){
-                        memory->insert(make_pair(memory_address,parse_opcode(binary_instruction,is_data,memory_address)));
+                        memory->insert(parse_opcode(binary_instruction,is_data,memory_address));
                 }else{
                         memory->insert(make_pair(memory_address, (new Abstract(binary_instruction, memory_address, DATATYPE))));
                 }

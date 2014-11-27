@@ -6,6 +6,7 @@
 #include<string>
 #include<assert.h>
 #include "Instructions.h"
+#include "ROB.h"
 using namespace std;
 class RSEntry{
         friend class ALUUnit;
@@ -42,6 +43,7 @@ class ReservationStations{
         void reset(RSEntry* rs);
         bool isFull();
         bool addStation(RSEntry* reservationStation);
+        void updateStations(ROB* rob);
         void updateStations(std::map<int,int> CDB);
         std::vector<RSEntry*> checkPendingReservationStations(int cycle);
         void remove(RSEntry* reservationStation);

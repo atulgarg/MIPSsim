@@ -15,6 +15,7 @@ void DecodeUtility::decodeUtility(int reg, int& V,int& Q){
                         V = rob->value(h);
                         Q = -1;
                 }else{
+                        V = 0;
                         Q = h;
                 }
         }else{
@@ -67,6 +68,7 @@ RSEntry* DecodeUtility::decodeITypeInstruction(I_Instruction* instruction, int c
         int numCycles = 1;
 
         RSEntry* reservationStation = new RSEntry(instruction, true, Vj, Qj, cycle, numCycles);
+        cout<<"Decoding Vj = "<<Vj<<" and Qj = "<<Qj<<endl;
         reservationStation->updateROBId(robID);
         return reservationStation; 
 }
@@ -132,6 +134,7 @@ RSEntry* DecodeUtility::decodeInstruction(Instruction* instruction,int cycle){
                 return decodeJTypeInstruction((J_Instruction*)instruction, cycle);
 }
 void DecodeUtility::decodeNOPAndBreak(Instruction* instruction, int cycle){
+        cout<<"Decoding NOP Or Break"<<endl;
         ROBEntry* robEntry 
                 = new ROBEntry(true, instruction, ROB_EXECUTE);
         int robID = rob->push(robEntry);

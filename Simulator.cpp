@@ -10,7 +10,8 @@ vector<string> Simulator::simulate(){
         vector<string> output;
         int cycle = 1;
         bool nextFetch = true;
-        while(cycle < 45){
+        
+        while(cycle < 47){
                 stringstream ss;
                 ss<<"Cycle <"<<cycle<<">:";
                 output.push_back(ss.str());
@@ -27,6 +28,7 @@ vector<string> Simulator::simulate(){
                 cout<<"Cycle ended"<<endl;
                 cycle++;
         }
+        cout<<memory_map->find(664)->second->print(false)<<endl;
         return output;
 }
 vector<string> Simulator::simulate(int m, int n){
