@@ -1,4 +1,7 @@
 FULL_NAME : ATUL GARG
-GATORLINK ACCOUNT : atgarg
+GATORLINK ACCOUNT : atgarg (94432505)
 EMAIL_ADDRESS : atgarg@ufl.edu
+Instructions:
+1. make from project directory
+2. Entries in BTB are inserted only during executing stage as per the book text and no entry is update in IF stage as per the output cycle.
 "On my honor, I have neither given nor received unauthorized aid on this assignment."

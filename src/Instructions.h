@@ -456,10 +456,9 @@ class Beq: public I_Instruction{
                 virtual int execute(int rs,int rt){
                         if(rs == rt){
                                 isBranchTaken = PREDICTION_TAKEN;
-                                return getMemory() + 4 + getImmediate();
                         }
-                        else
-                                return getMemory() + 4;
+
+                        return getMemory() + 4 + getImmediate();
                 }
                 bool isBranch(){
                         return true;
@@ -486,10 +485,8 @@ class Bne: public I_Instruction{
                 virtual int execute(int rs, int rt){
                         if(rs != rt){
                                 isBranchTaken = PREDICTION_TAKEN;
-                                return getMemory() + 4 + getImmediate();
-                        }else
-                                return getMemory() + 4;
-
+                        }
+                        return getMemory() + 4 + getImmediate();
                 }
 
 };
@@ -513,9 +510,8 @@ class Bgez: public I_Instruction{
                 virtual int execute(int rs, int rt){
                         if(rs >= 0){
                                 isBranchTaken = PREDICTION_TAKEN;
-                                return getMemory() + 4 + getImmediate();
-                        }else
-                                return getMemory() + 4;
+                        }
+                        return getMemory() + 4 + getImmediate();
                 }
 
 };
@@ -539,9 +535,8 @@ class Bgtz: public I_Instruction{
                 virtual int execute(int rs, int rt){
                         if(rs > 0){
                                 isBranchTaken = PREDICTION_TAKEN;
-                                return getMemory() + 4 + getImmediate();
-                        }else
-                                return getMemory() + 4;
+                        }
+                        return getMemory() + 4 + getImmediate();
                 }
 
 };
@@ -565,9 +560,8 @@ class Blez: public I_Instruction{
                 virtual int execute(int rs, int rt){
                         if(rs <= 0){
                                 isBranchTaken = PREDICTION_TAKEN;
-                                return getMemory() + 4 + getImmediate();
-                        }else
-                                return getMemory() + 4;
+                        }
+                        return getMemory() + 4 + getImmediate();
                 }
 
 };
@@ -591,9 +585,8 @@ class Bltz: public I_Instruction{
                 virtual int execute(int rs, int rt){
                         if(rs < 0){
                                 isBranchTaken = PREDICTION_TAKEN;
-                                return getMemory() + 4 + getImmediate();
-                        }else
-                                return getMemory() + 4;
+                        }
+                        return getMemory() + 4 + getImmediate();
                 }
 
 };

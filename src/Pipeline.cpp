@@ -182,12 +182,13 @@ void Pipeline::execute(int cycle){
                         //execute then check if complete to move it to next stage.
                         if(rs->instruction->isBranch() || rs->instruction->isJump()){
                                 int evaluatedAddress = rs->result;
-                                if(predictedAddress[rs->instruction] != evaluatedAddress){
+                                if(rs->instruction->isBranchTaken == PREDICTION_TAKEN
+                                                && predictedAddress[rs->instruction] != rs->result){
                                         debug("branch misprediction");
                                         resetPipeline(rs->robID,evaluatedAddress);
                                 }
 
-                                btb.update(rs->instruction->getMemory(),evaluatedAddress,rs->instruction->isBranchTaken);
+                                btb.update(rs->instruction->getMemory(), evaluatedAddress, rs->instruction->isBranchTaken);
                         }
                         executedInstruction.push_back(make_pair(rs,cycle));
                 }
@@ -272,7 +273,6 @@ bool Pipeline::commit(int cycle){
                         robToRS.erase(rob.getHeadID());
                 }
                 rob.pop();
-
         }
         debug("ROB size %d", rob.size());
         debug("Commit Close ");
