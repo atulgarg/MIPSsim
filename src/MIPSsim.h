@@ -5,7 +5,9 @@
 #include<vector>
 #include<fstream>
 #include<cstring>
+#include<string>
 #include<cstdlib>
+#include<sys/stat.h>
 #include "Dissembler.h"
 #include "Simulator.h"
 #include "Instructions.h"

@@ -6,25 +6,26 @@ Simulator::Simulator(map<int,Abstract*>* memory_map,int program_counter,
         this->program_counter = program_counter;
         pipeline = new Pipeline(numReservationStations, numROBEntry, numberOfRegisters, numBTBEntries,memory_map);
 }
+
 vector<string> Simulator::simulate(){
         vector<string> output;
         int cycle = 1;
         bool nextFetch = true;
 
         while(nextFetch){
-                stringstream ss;
-                ss<<"Cycle <"<<cycle<<">:";
-                output.push_back(ss.str());
+                //stringstream ss;
+                //ss<<"Cycle <"<<cycle<<">:";
+                //output.push_back(ss.str());
 
                 pipeline->instructionFetch(cycle);
                 pipeline->decodeAndIssue(cycle);
 
-                vector<string> cycleOutput = pipeline->printPipeline();
+                //vector<string> cycleOutput = pipeline->printPipeline();
                 pipeline->execute(cycle);
                 pipeline->writeResult(cycle);
                 nextFetch = pipeline->commit(cycle);
 
-                output.insert(output.end(),cycleOutput.begin(),cycleOutput.end());
+                //output.insert(output.end(),cycleOutput.begin(),cycleOutput.end());
                 cycle++;
         }
         //This is only since the last three stages were not executed
@@ -37,4 +38,33 @@ vector<string> Simulator::simulate(){
         return output;
 }
 vector<string> Simulator::simulate(int m, int n){
+        vector<string> output;
+        int cycle = 1;
+        bool nextFetch = true;
+
+        while(nextFetch){
+                pipeline->instructionFetch(cycle);
+                pipeline->decodeAndIssue(cycle);
+                if(cycle >=m && cycle<=n){
+                        stringstream ss;
+                        ss<<"Cycle <"<<cycle<<">:";
+                        output.push_back(ss.str());
+
+                        vector<string> cycleOutput = pipeline->printPipeline();
+                        output.insert(output.end(),cycleOutput.begin(),cycleOutput.end());
+                }
+                pipeline->execute(cycle);
+                pipeline->writeResult(cycle);
+                nextFetch = pipeline->commit(cycle);
+                                cycle++;
+        }
+        //This is only since the last three stages were not executed
+        stringstream cycleHeading;
+        cycleHeading<<"Final Cycle <"<<--cycle<<">:";
+        output.push_back(cycleHeading.str());
+        vector<string> cycleOutput = pipeline->printPipeline();
+        output.insert(output.end(),cycleOutput.begin(),cycleOutput.end());
+
+        return output;
+
 }

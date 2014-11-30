@@ -39,15 +39,39 @@ void MIPSsim::print_cycle(vector<string> cycleOutput){
         }
         ofs.close();
 }
-bool notValidArguments(int num_args, char* argv[]){
-        if(strcmp(argv[3],"dis") != 0 && strcmp(argv[3],"sim") != 0)
-                return true;
-        else
-                return false;
+/**
+ * Dirty argument parsing.
+ */
+bool isValid(int num_args, char* argv[],int& m,int& n){
+        struct stat buffer;
+        if(stat (argv[1], &buffer) == 0){
+                if(strcmp(argv[3],"dis") == 0 && num_args == 4)
+                        return true;
+                else if(strcmp(argv[3],"sim") ==0){
+                        if(num_args == 5){
+                                try{
+                                        std::string opt = argv[4];
+                                        if((opt.substr(0,2)).compare("-T") == 0
+                                                        && opt.find(":")!= std::string::npos){
+                                                string stm = opt.substr(2,opt.find(":")-2);
+                                                string stn = opt.substr(opt.find(":")+1,opt.length()-opt.find(":")-1);
+                                                m = std::stoi(stm);
+                                                n = std::stoi(stn);
+                                                if(m<=n)
+                                                        return true;
+                                        }
+                                }catch(std::invalid_argument arg){
+                                        return false;
+                                }
+                        }else
+                                return true;
+                }
+        }
+        return false;
 }
-
 int main(int argc, char* argv[]){
-        if(argc < 4 || argc>5 || notValidArguments(argc,argv)){
+        int m=0,n=0;
+        if(argc < 4 || argc>5 || !isValid(argc,argv,m,n)){
                 cout<<"Incorrect usage."<<endl<<
                         "Usage: MIPSsim inputfilename outputfilename operation [-Tm:n]"<<endl<<endl
                         <<"Inputfilename - The file name of the binary input file."<<endl
@@ -57,12 +81,11 @@ int main(int argc, char* argv[]){
                 exit(0);
         }
         MIPSsim mipssim(argv[1],argv[2]);
-        //this will initialise memory.
+        cout<<"m= "<<m<<" n= "<<n<<endl;
         mipssim.dissemble();
         if(strcmp(argv[3],"dis") == 0){
                 mipssim.print_memory();
         }else if(strcmp(argv[3],"sim") ==0 ){
-                //TODO m,n parse
-                mipssim.print_cycle(mipssim.simulate(0,0));
+                mipssim.print_cycle(mipssim.simulate(m,n));
         }
 }
