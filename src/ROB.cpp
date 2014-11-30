@@ -97,11 +97,12 @@ void ROB::reset(int robID, RegisterStat* registerStat){
                         newMap.insert(*iter);
                         newList.push_front(iter->second);
                 }else{ 
-                
-                       if(registerStat->registerBusy(iter->second->destination)
-                                       && registerStat->getRegisterReorderEntryID(iter->second->destination) == iter->first)
-                               debug("Resetting register R%d", iter->second->destination);
-                               //registerStat->reset(iter->second->destination);
+
+                        if(registerStat->registerBusy(iter->second->destination)
+                                        && registerStat->getRegisterReorderEntryID(iter->second->destination) == iter->first){
+                                debug("Resetting register R%d", iter->second->destination);
+                                registerStat->reset(iter->second->destination);
+                        }
                 }
         }
         rob = newList;
