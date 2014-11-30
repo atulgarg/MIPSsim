@@ -81,7 +81,6 @@ int main(int argc, char* argv[]){
                 exit(0);
         }
         MIPSsim mipssim(argv[1],argv[2]);
-        cout<<"m= "<<m<<" n= "<<n<<endl;
         mipssim.dissemble();
         if(strcmp(argv[3],"dis") == 0){
                 mipssim.print_memory();

@@ -1,6 +1,7 @@
 #ifndef _ROB_H_
 #define _ROB_H_
 #include "Instructions.h"
+#include "PipelineUnits.h"
 #include "dbg.h"
 #include<cstdlib>
 #include<list>
@@ -43,7 +44,7 @@ class ROB{
         ROBEntry* pop();
         bool isEmpty();
         bool isFull();
-        void reset(int robID);
+        void reset(int robID, RegisterStat* registerStat);
         int value(int robID);
         ROBState state(int robID);
         void update(int robID, int value, int cycle, ROBState state);

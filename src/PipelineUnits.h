@@ -24,6 +24,7 @@ class RegisterStat{
         public:
         RegisterStat(int numberOfRegisters);
         void updateRegister(int registerID, bool busy, int reorderID);
+        void reset(int registerID);
         bool registerBusy(int registerID);
         int getRegisterReorderEntryID(int registerID);
 };

@@ -86,7 +86,7 @@ ROBEntry* ROB::pop(){
 bool ROB::isEmpty(){
         return (rob.size() == 0);
 }
-void ROB::reset(int robID){
+void ROB::reset(int robID, RegisterStat* registerStat){
         //CHECK
         map<int, ROBEntry*> newMap;
         list<ROBEntry*> newList;
@@ -96,6 +96,12 @@ void ROB::reset(int robID){
                 if(iter->first <= robID){
                         newMap.insert(*iter);
                         newList.push_front(iter->second);
+                }else{ 
+                
+                       if(registerStat->registerBusy(iter->second->destination)
+                                       && registerStat->getRegisterReorderEntryID(iter->second->destination) == iter->first)
+                               debug("Resetting register R%d", iter->second->destination);
+                               //registerStat->reset(iter->second->destination);
                 }
         }
         rob = newList;

@@ -23,10 +23,15 @@ void RegisterStat::updateRegister(int registerID, bool status, int reorderEntryI
         registerStat[registerID].update(status,reorderEntryID);
 }
 bool RegisterStat::registerBusy(int registerID){
-        return registerStat[registerID].isBusy();
+        if(registerID < numberOfRegisters)
+                return registerStat[registerID].isBusy();
+        return false;
 }
 int RegisterStat::getRegisterReorderEntryID(int registerID){
         return registerStat[registerID].getReorderEntryID();
+}
+void RegisterStat::reset(int registerID){
+        registerStat[registerID].update(false,-1);
 }
 //Register File Operations.
 RegisterFile::RegisterFile(int numberOfRegisters){

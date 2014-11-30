@@ -110,7 +110,7 @@ void Pipeline::resetPipeline(int robID, int PC){
         }
         
         reservationStations.reset(robToRS[robID]);
-        rob.reset(robID);
+        rob.reset(robID, &registerStat);
        
         //finally swap
         robToRS.swap(robToRSTempMap);        
