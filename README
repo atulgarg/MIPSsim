@@ -1,7 +1,4 @@
-FULL_NAME : ATUL GARG
-GATORLINK ACCOUNT : atgarg (94432505)
-EMAIL_ADDRESS : atgarg@ufl.edu
-Instructions:
-1. make from project directory
-2. Entries in BTB are inserted only during executing stage as per the book text and no entry is update in IF stage as per the output cycle.
-"On my honor, I have neither given nor received unauthorized aid on this assignment."
+MIPS simulator using Tomasulo algorithm and Pipeline components using Branch target buffer(1-bit predictor), Reorder buffer, 32-bit architecture and double arithmatic operations.
+TO DO
+1. make architecture, entries in BTB,ROB configurable.
+2. use getopt instead of dirty parsing.
